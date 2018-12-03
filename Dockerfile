@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git python curl ca-certificates
+  && apt-get install -y --no-install-recommends git python curl ca-certificates zlib1g-dev
 
 # Install depot_tools
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /opt/depot_tools
