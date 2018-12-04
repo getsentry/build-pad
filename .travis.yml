@@ -1,16 +1,20 @@
 language: generic
 install: skip
 
+branches:
+  only:
+    - master
+
 matrix:
   include:
     - os: linux
       sudo: required
-      script: build-docker.sh
+      script: ./build-docker.sh
 
     - os: macos
       language: cpp
       compiler: clang
-      script: build-macos.sh
+      script: ./build-macos.sh
 
     - os: windows
       script: build-windows.bat
