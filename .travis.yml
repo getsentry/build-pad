@@ -11,9 +11,8 @@ matrix:
       sudo: required
       script: ./build-docker.sh
 
-    - os: macos
+    - os: osx
       language: cpp
-      compiler: clang
       script: ./build-macos.sh
 
     - os: windows
