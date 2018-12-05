@@ -13,7 +13,7 @@ matrix:
 
     - os: osx
       language: cpp
-      script: ./build-macos.sh
+      script: ./build-unix.sh
 
     - os: windows
       language: cpp

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -eux
 
 mkdir -p build
 cd build

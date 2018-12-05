@@ -1,5 +1,5 @@
 #/usr/bin/env bash
-set -ex
+set -eux
 
 docker build -t getsentry/crashpad-build .
-docker run -it -v $(pwd):/work -w /work getsentry/crashpad-build bash build-linux.sh
+docker run -it -v $(pwd):/work -w /work getsentry/crashpad-build bash build-unix.sh
