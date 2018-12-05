@@ -13,8 +13,8 @@ matrix:
 
     - os: osx
       language: cpp
-      script: ./build-unix.sh
+      script: ./build-shell.sh
 
     - os: windows
       language: cpp
-      script: ./build-windows.bat
+      script: ./build-shell.sh
