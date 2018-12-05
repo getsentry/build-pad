@@ -16,4 +16,5 @@ matrix:
       script: ./build-macos.sh
 
     - os: windows
+      language: cpp
       script: build-windows.bat
