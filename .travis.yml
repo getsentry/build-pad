@@ -17,4 +17,4 @@ matrix:
 
     - os: windows
       language: cpp
-      script: build-windows.bat
+      script: ./build-windows.bat
