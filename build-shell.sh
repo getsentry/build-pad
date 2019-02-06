@@ -13,19 +13,35 @@ else
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 fi
 
-export PATH="$PATH:$(pwd)/depot_tools"
+export PATH="$(pwd)/depot_tools:$PATH"
+
+if [ "$AGENT_OS" == "Windows_NT" ]; then
+  FETCH_CMD='fetch.bat'
+  GN_CMD='gn.bat'
+  NINJA_CMD='ninja.exe'
+  GCLIENT_CMD='gclient.bat'
+else
+  FETCH_CMD='fetch'
+  GN_CMD='gn'
+  NINJA_CMD='ninja'
+  GCLIENT_CMD='gclient'
+fi
 
 # Checkout and sync crashpad
 if [ -d crashpad ]; then
   cd crashpad
   git pull -r
-  gclient sync
+  $GCLIENT_CMD sync
 else
-  fetch crashpad
+  $FETCH_CMD crashpad
   cd crashpad
   git checkout master
 fi
 
+# Check Python
+which python
+python -V
+
 # Build crashpad
-gn gen out/Default
-ninja -C out/Default
+$GN_CMD gen out/Default
+$NINJA_CMD -C out/Default

@@ -1,20 +1,20 @@
-language: generic
-install: skip
-
-branches:
-  only:
-    - master
-
-matrix:
-  include:
-    - os: linux
-      sudo: required
-      script: ./build-docker.sh
-
-    - os: osx
-      language: cpp
-      script: ./build-shell.sh
-
-    - os: windows
-      language: cpp
-      script: ./build-shell.sh
+# language: generic
+# install: skip
+# 
+# branches:
+#   only:
+#     - master
+# 
+# matrix:
+#   include:
+#     - os: linux
+#       sudo: required
+#       script: ./build-docker.sh
+# 
+#     - os: osx
+#       language: cpp
+#       script: ./build-shell.sh
+# 
+#     - os: windows
+#       language: cpp
+#       script: ./build-shell.sh
