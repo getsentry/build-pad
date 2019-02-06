@@ -1,0 +1,28 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+strategy:
+  matrix:
+    linux:
+      imageName: "ubuntu-16.04"
+    mac:
+      imageName: "macos-10.13"
+
+trigger:
+  - master
+
+pool:
+  vmImage: $(imageName)
+
+steps:
+  # Linux
+  - bash: bash build-docker.sh
+    condition: eq( variables['Agent.OS'], 'Linux' )
+    displayName: Linux Build
+
+  # macOS
+  - bash: bash build-shell.sh
+    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: MacOS Build
