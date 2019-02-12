@@ -1,0 +1,41 @@
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+strategy:
+  matrix:
+    linux:
+      imageName: "ubuntu-16.04"
+    mac:
+      imageName: "macos-10.13"
+    windows:
+      imageName: "vs2017-win2016"
+
+trigger:
+  - "*"
+
+pool:
+  vmImage: $(imageName)
+
+pr: none
+
+steps:
+  # Linux
+  - bash: |
+      env
+      bash build-docker.sh
+    condition: eq( variables['Agent.OS'], 'Linux' )
+    displayName: Linux Build
+
+  # macOS
+  - bash: |
+      env
+      bash build-shell.sh
+    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: MacOS Build
+
+  # Windows
+  - bash: |
+      env
+      bash build-shell.sh
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+    displayName: Windows Build

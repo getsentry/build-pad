@@ -2,4 +2,4 @@
 set -eux
 
 docker build -t getsentry/crashpad-build .
-docker run -it -v $(pwd):/work -w /work getsentry/crashpad-build bash build-shell.sh
+docker run -t -v $(pwd):/work -w /work getsentry/crashpad-build bash build-shell.sh
