@@ -15,7 +15,7 @@ fi
 
 export PATH="$(pwd)/depot_tools:$PATH"
 
-if [ "$AGENT_OS" == "Windows_NT" ]; then
+if [ "${AGENT_OS:-}" == "Windows_NT" ]; then
   FETCH_CMD='fetch.bat'
   GN_CMD='gn.bat'
   NINJA_CMD='ninja.exe'
