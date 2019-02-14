@@ -1,0 +1,5 @@
+# Build arguments go here.
+# See "gn args <out_dir> --list" for available build arguments.
+
+# Statically link libstdc++ on Linux
+link_libstdcpp_statically = true

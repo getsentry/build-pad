@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eux
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 mkdir -p build
 cd build
 
@@ -43,5 +45,9 @@ which python
 python -V
 
 # Build crashpad
-$GN_CMD gen out/Default
-$NINJA_CMD -C out/Default
+OUT_DIR=out/Default
+mkdir -p $OUT_DIR
+cp $SCRIPT_DIR/args/args.gn $OUT_DIR
+
+$GN_CMD gen "$OUT_DIR"
+$NINJA_CMD -C "$OUT_DIR"
