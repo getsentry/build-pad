@@ -21,22 +21,18 @@ pr: none
 steps:
   # Linux
   - bash: |
-      mkdir -p dist/out
-      echo 123 > dist/out/test1
-      # env
-      # bash build-docker.sh
-      # sudo chown -R $USER ./build
-      # bash collect-files.sh
+      env
+      bash build-docker.sh
+      sudo chown -R $USER ./build
+      bash collect-files.sh
     condition: eq( variables['Agent.OS'], 'Linux' )
     displayName: Linux Build
 
   # macOS
   - bash: |
-      mkdir -p dist/out
-      echo 123 > dist/out/test2
-      # env
-      # bash build-shell.sh
-      # bash collect-files.sh
+      env
+      bash build-shell.sh
+      bash collect-files.sh
     condition: eq( variables['Agent.OS'], 'Darwin' )
     displayName: MacOS Build
 
