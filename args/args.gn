@@ -3,3 +3,6 @@
 
 # Statically link libstdc++ on Linux
 link_libstdcpp_statically = true
+
+# Minimal supported MacOS version
+mac_deployment_target = "10.9"
