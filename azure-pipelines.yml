@@ -33,7 +33,7 @@ steps:
   # macOS
   - bash: |
       mkdir -p dist/out
-      echo 123 > dist/out/test1
+      echo 123 > dist/out/test2
       # env
       # bash build-shell.sh
       # bash collect-files.sh
