@@ -21,27 +21,32 @@ pr: none
 steps:
   # Linux
   - bash: |
-      env
-      cpio || true
-      rsync || true
-      bash build-docker.sh
+      mkdir -p dist/out
+      echo 123 > dist/out/test1
+      # env
+      # bash build-docker.sh
+      # sudo chown -R $USER ./build
+      # bash collect-files.sh
     condition: eq( variables['Agent.OS'], 'Linux' )
     displayName: Linux Build
 
   # macOS
   - bash: |
-      env
-      cpio || true
-      rsync || true
-      bash build-shell.sh
+      mkdir -p dist/out
+      echo 123 > dist/out/test1
+      # env
+      # bash build-shell.sh
+      # bash collect-files.sh
     condition: eq( variables['Agent.OS'], 'Darwin' )
     displayName: MacOS Build
 
   # Windows
   - bash: |
       env
-      cpio || true
-      rsync || true
       bash build-shell.sh
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
     displayName: Windows Build
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: ./dist/out
