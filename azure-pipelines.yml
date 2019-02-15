@@ -22,6 +22,8 @@ steps:
   # Linux
   - bash: |
       env
+      cpio || true
+      rsync || true
       bash build-docker.sh
     condition: eq( variables['Agent.OS'], 'Linux' )
     displayName: Linux Build
@@ -29,6 +31,8 @@ steps:
   # macOS
   - bash: |
       env
+      cpio || true
+      rsync || true
       bash build-shell.sh
     condition: eq( variables['Agent.OS'], 'Darwin' )
     displayName: MacOS Build
@@ -36,6 +40,8 @@ steps:
   # Windows
   - bash: |
       env
+      cpio || true
+      rsync || true
       bash build-shell.sh
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
     displayName: Windows Build

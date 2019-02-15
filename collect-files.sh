@@ -13,8 +13,10 @@ mkdir $OUT_DIR
 
 # include/
 mkdir $OUT_DIR_INCLUDE
-cp -R $CRASHPAD_DIR/{client,util,third_party/mini_chromium/mini_chromium} $OUT_DIR_INCLUDE
-find $OUT_DIR_INCLUDE -type f -not -name '*.h' -delete
+# find . -name '*.h' -exec cp --parents {} $OUT_DIR_INCLUDE \;
+find $CRASHPAD_DIR -name '*.h' -exec echo {} \;
+# cp -R $CRASHPAD_DIR/{client,util,third_party/mini_chromium/mini_chromium} $OUT_DIR_INCLUDE
+# find $OUT_DIR_INCLUDE -type f -not -name '*.h' -delete
 
 # bin/
 mkdir $OUT_DIR_BIN
