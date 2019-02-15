@@ -64,5 +64,5 @@ tags
 # Persistent undo
 [._]*.un~
 
+dist/
 # End of https://www.gitignore.io/api/vim,macos,linux
-
