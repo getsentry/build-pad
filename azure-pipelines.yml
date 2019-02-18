@@ -1,53 +1,119 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-strategy:
-  matrix:
-    linux:
-      imageName: "ubuntu-16.04"
-    mac:
-      imageName: "macos-10.13"
-    windows:
-      imageName: "vs2017-win2016"
+# strategy:
+#   matrix:
+#     linux:
+#       imageName: "ubuntu-16.04"
+#     mac:
+#       imageName: "macos-10.13"
+#     windows:
+#       imageName: "vs2017-win2016"
+
+# pool:
+#   vmImage: $(imageName)
+
+# steps:
+#   # Linux
+#   - bash: |
+#       env
+#       cd crashpad/
+#       bash build-docker.sh
+#       sudo chown -R $USER ./build
+#       bash collect-files.sh
+#     condition: eq( variables['Agent.OS'], 'Linux' )
+#     displayName: Linux Build
+
+#   # macOS
+#   - bash: |
+#       env
+#       cd crashpad/
+#       bash build-shell.sh
+#       bash collect-files.sh
+#     condition: eq( variables['Agent.OS'], 'Darwin' )
+#     displayName: MacOS Build
+
+#   # Windows
+#   - bash: |
+#       env
+#       cd crashpad/
+#       bash build-shell.sh
+#       mkdir -p dist/out
+#       echo > dist/out/crashpad-Windows
+#     condition: eq( variables['Agent.OS'], 'Windows_NT' )
+#     displayName: Windows Build
+
+#   - task: PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish: ./crashpad/dist/out
 
 trigger:
   - "*"
 
-pool:
-  vmImage: $(imageName)
-
 pr: none
 
-steps:
-  # Linux
-  - bash: |
-      env
-      cd crashpad/
-      bash build-docker.sh
-      sudo chown -R $USER ./build
-      bash collect-files.sh
-    condition: eq( variables['Agent.OS'], 'Linux' )
-    displayName: Linux Build
+jobs:
+  - job: breakpad_macos
+    displayName: Breakpad (MacOS, x86_64)
+    pool:
+      vmImage: "macos-10.13"
+    steps:
+      - template: templates/prescript-common.yml
+      - bash: |
+          cd breakpad/
+          make build-macos-all
+      - task: PublishBuildArtifacts@1
+        inputs:
+          artifactName: "breakpad-Darwin.zip"
+          pathToPublish: "breakpad/macos/dist/out/breakpad-Darwin.zip"
+      - template: templates/zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+      - template: templates/zeus-report.yml
 
-  # macOS
-  - bash: |
-      env
-      cd crashpad/
-      bash build-shell.sh
-      bash collect-files.sh
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: MacOS Build
+  - job: breakpad_linux
+    displayName: Breakpad (Linux, x86_64)
+    pool:
+      vmImage: "ubuntu-16.04"
+    steps:
+      - template: templates/prescript-common.yml
+      - bash: |
+          cd breakpad/
+          make build-linux-docker-all
+      - task: PublishBuildArtifacts@1
+        inputs:
+          artifactName: "breakpad-Linux.zip"
+          pathToPublish: "breakpad/linux/dist/out/breakpad-Linux.zip"
+      - template: templates/zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+      - template: templates/zeus-report.yml
 
-  # Windows
-  - bash: |
-      env
-      cd crashpad/
-      bash build-shell.sh
-      mkdir -p dist/out
-      echo > dist/out/crashpad-Windows
-    condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    displayName: Windows Build
+  - job: breakpad_windows
+    displayName: Breakpad (Windows, x86_64)
+    pool:
+      vmImage: "vs2015-win2012r2"
+    steps:
+      - template: templates/prescript-common.yml
+      - bash: |
+          cd breakpad/
+          bash linux/build-shell.sh
+      - template: templates/zeus-report.yml
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: ./crashpad/dist/out
+  - job: breakpad_android
+    displayName: Breakpad (Android, ARM)
+    pool:
+      vmImage: "macos-10.13"
+    steps:
+      - bash: |
+          env
+          find $ANDROID_NDK_HOME
+          cd breakpad/
+          bash build-shell.sh
+        env:
+          BREAKPAD_CONFIGURE_FLAGS: >
+            --host=arm-linux-androideabi
+            --disable-processor
+            --disable-tools

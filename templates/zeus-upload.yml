@@ -1,0 +1,13 @@
+parameters:
+  path: ""
+  pattern: ""
+
+steps:
+  - bash: |
+      set -eux
+      zeus upload --build "$BUILD_BUILDID" --job "$AGENT_ID" -t "application/zip" \
+                  ${{ parameters.path }}/${{ parameters.pattern }}
+    condition: succeeded()
+    env:
+      ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
+    displayName: Post-build task (success)
