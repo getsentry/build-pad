@@ -43,11 +43,11 @@ jobs:
       - bash: |
           cd crashpad/
           bash build-shell.sh
-          find build/
-          mkdir -p dist/out
-          echo > dist/out/crashpad-Windows
+          find build/  # TODO remove
+          bash ./collect-files-windows.sh
       - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
           pattern: "*.zip"
+          uploadName: "crashpad-Windows-x86_64.zip"
       - template: zeus-report.yml

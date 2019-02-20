@@ -47,6 +47,7 @@ jobs:
       - template: prescript-common.yml
       - bash: |
           cd breakpad/
+          ls -alh /mingw64/bin
           make
       - template: zeus-report.yml
 
