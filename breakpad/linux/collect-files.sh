@@ -4,7 +4,7 @@ set -eux
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
 
-PACKAGE_NAME="breakpad-$(uname -s)"
+PACKAGE_NAME="breakpad-Linux"
 DIST_DIR="${SCRIPT_DIR}/dist"
 GLOBAL_DIST="${SCRIPT_DIR}/../dist"
 ARCHIVES_DIR="${DIST_DIR}/out"
@@ -33,8 +33,8 @@ cp $BUILD_DIR/processor/{minidump_dump,minidump_stackwalk} $OUT_DIR_BIN
 mkdir $OUT_DIR_LIB
 cp $BUILD_DIR/{libbreakpad.a,client/linux/libbreakpad_client.a,third_party/libdisasm/libdisasm.a} $OUT_DIR_LIB
 
-pushd $OUT_DIR
-zip -r $ARCHIVE_OUT_NAME .
+pushd $DIST_DIR
+zip -r $ARCHIVE_OUT_NAME $PACKAGE_NAME
 
 mkdir -p $GLOBAL_DIST
 cp $ARCHIVE_OUT_NAME $GLOBAL_DIST

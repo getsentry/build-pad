@@ -27,6 +27,8 @@ jobs:
       - bash: |
           cd breakpad/
           make build-linux-docker-all
+          # Smoke test
+          make -C linux main
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: "breakpad-Linux.zip"

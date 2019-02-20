@@ -33,8 +33,8 @@ cp $BUILD_DIR/{dump_syms,minidump_dump,minidump_stackwalk} $OUT_DIR_BIN
 mkdir $OUT_DIR_LIB
 cp $BUILD_DIR/{libbreakpad_client,libdisasm}.a $OUT_DIR_LIB
 
-pushd $OUT_DIR
-zip -r $ARCHIVE_OUT_NAME .
+pushd $DIST_DIR
+zip -r $ARCHIVE_OUT_NAME $PACKAGE_NAME
 
 mkdir -p $GLOBAL_DIST
 cp $ARCHIVE_OUT_NAME $GLOBAL_DIST

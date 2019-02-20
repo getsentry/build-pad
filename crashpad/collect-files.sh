@@ -31,6 +31,5 @@ cp $BUILD_DIR/{crashpad_handler,crashpad_http_upload,crashpad_database_util} $OU
 mkdir $OUT_DIR_LIB
 cp $BUILD_DIR/obj/{client/libclient.a,util/libutil.a,third_party/mini_chromium/mini_chromium/base/libbase.a} $OUT_DIR_LIB
 
-pushd $OUT_DIR
-zip -r $ARCHIVE_OUT_NAME .
-popd
+pushd $DIST_DIR
+zip -r $ARCHIVE_OUT_NAME $PACKAGE_NAME
