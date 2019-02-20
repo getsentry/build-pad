@@ -4,7 +4,7 @@ set -eux
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
 
-PACKAGE_NAME="breakpad-$(uname -s)"
+PACKAGE_NAME="breakpad-Darwin"
 DIST_DIR="${SCRIPT_DIR}/dist"
 GLOBAL_DIST="${SCRIPT_DIR}/../dist"
 ARCHIVES_DIR="${DIST_DIR}/out"

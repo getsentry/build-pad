@@ -1,11 +1,14 @@
 parameters:
   path: ""
   pattern: ""
+  uploadName: ""
 
 steps:
   - bash: |
       set -eux
-      zeus upload --build "$BUILD_BUILDID" --job "$AGENT_ID" -t "application/zip" \
+      zeus upload --build "$BUILD_BUILDID" --job "$AGENT_ID" \
+                  -t "application/zip" \
+                  -n "${{ parameters.uploadName }}" \
                   ${{ parameters.path }}/${{ parameters.pattern }} || true
     condition: succeeded()
     env:

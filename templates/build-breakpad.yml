@@ -16,6 +16,7 @@ jobs:
         parameters:
           path: ./breakpad/dist
           pattern: "*.zip"
+          uploadName: "breakpad-Darwin-x86_64.zip"
       - template: zeus-report.yml
 
   - job: breakpad_linux
