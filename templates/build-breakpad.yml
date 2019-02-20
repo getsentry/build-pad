@@ -47,7 +47,10 @@ jobs:
       - template: prescript-common.yml
       - bash: |
           cd breakpad/
-          make build-windows-all
+          make || true
+          make.bat || true
+          make.exe || true
+          make.bat build-windows-all
       - template: zeus-report.yml
 
   - job: breakpad_android
