@@ -27,3 +27,5 @@ build-linux-all: clean-deps fetch-breakpad build-linux collect-linux
 
 build-linux-docker-all:
 	bash ./linux/build-docker.sh
+
+build-windows-all: clean-deps fetch-breakpad build-linux

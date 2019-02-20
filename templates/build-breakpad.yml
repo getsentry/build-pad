@@ -10,7 +10,6 @@ jobs:
           make build-macos-all
       - task: PublishBuildArtifacts@1
         inputs:
-          artifactName: "breakpad-Darwin.zip"
           pathToPublish: "breakpad/macos/dist/out/breakpad-Darwin.zip"
       - template: zeus-upload.yml
         parameters:
@@ -32,12 +31,12 @@ jobs:
           make -C linux main
       - task: PublishBuildArtifacts@1
         inputs:
-          artifactName: "breakpad-Linux.zip"
           pathToPublish: "breakpad/linux/dist/out/breakpad-Linux.zip"
       - template: zeus-upload.yml
         parameters:
           path: ./breakpad/dist
           pattern: "*.zip"
+          uploadName: "breakpad-Linux-x86_64.zip"
       - template: zeus-report.yml
 
   - job: breakpad_windows
@@ -48,7 +47,7 @@ jobs:
       - template: prescript-common.yml
       - bash: |
           cd breakpad/
-          bash linux/build-shell.sh
+          make build-windows-all
       - template: zeus-report.yml
 
   - job: breakpad_android

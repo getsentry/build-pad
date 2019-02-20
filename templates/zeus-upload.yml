@@ -13,4 +13,4 @@ steps:
     condition: succeeded()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
-    displayName: Post-build task (success)
+    displayName: Upload artifacts to Zeus
