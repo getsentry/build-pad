@@ -31,5 +31,7 @@ cp $BUILD_DIR/{crashpad_handler.exe,crashpad_http_upload.exe,crashpad_database_u
 mkdir $OUT_DIR_LIB
 cp $BUILD_DIR/obj/{client/client{.lib,_cc.pdb},util/util{.lib,_cc.pdb},third_party/mini_chromium/mini_chromium/base/base{.lib,_cc.pdb}} $OUT_DIR_LIB
 
+ZIP=$SCRIPT_DIR/../bin/zip.py
+
 pushd $DIST_DIR
-zip -r $ARCHIVE_OUT_NAME $PACKAGE_NAME
+$ZIP -r $ARCHIVE_OUT_NAME $PACKAGE_NAME

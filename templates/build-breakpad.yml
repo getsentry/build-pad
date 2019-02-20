@@ -50,7 +50,7 @@ jobs:
       - bash: |
           set -eux
           cd breakpad/
-          ls -alh /mingw64/bin
+          ls -alh /mingw64/bin # TODO remove
           ls /c/ || true
           ls /c/MinGW/ || true
           7z || true
