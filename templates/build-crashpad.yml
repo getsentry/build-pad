@@ -43,6 +43,7 @@ jobs:
       - bash: |
           cd crashpad/
           bash build-shell.sh
+          find build/
           mkdir -p dist/out
           echo > dist/out/crashpad-Windows
       - template: zeus-upload.yml
