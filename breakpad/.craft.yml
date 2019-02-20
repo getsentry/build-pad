@@ -1,0 +1,7 @@
+minVersion: '0.7.4'
+github:
+  owner: getsentry
+  repo: crashpad-build
+targets:
+  - name: github
+    includeNames: /^breakpad-.*zip$/
