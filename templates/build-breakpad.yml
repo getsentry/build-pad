@@ -44,7 +44,7 @@ jobs:
   - job: breakpad_windows
     displayName: Breakpad (Windows, x86_64)
     pool:
-      vmImage: "vs2015-win2012r2"
+      vmImage: "vs2017-win2016"
     steps:
       - template: prescript-common.yml
       - bash: |
