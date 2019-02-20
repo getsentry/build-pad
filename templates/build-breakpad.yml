@@ -4,7 +4,7 @@ jobs:
     pool:
       vmImage: "macos-10.13"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd breakpad/
           make build-macos-all
@@ -12,18 +12,18 @@ jobs:
         inputs:
           artifactName: "breakpad-Darwin.zip"
           pathToPublish: "breakpad/macos/dist/out/breakpad-Darwin.zip"
-      - template: templates/zeus-upload.yml
+      - template: zeus-upload.yml
         parameters:
           path: ./breakpad/dist
           pattern: "*.zip"
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
 
   - job: breakpad_linux
     displayName: Breakpad (Linux, x86_64)
     pool:
       vmImage: "ubuntu-16.04"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd breakpad/
           make build-linux-docker-all
@@ -31,22 +31,22 @@ jobs:
         inputs:
           artifactName: "breakpad-Linux.zip"
           pathToPublish: "breakpad/linux/dist/out/breakpad-Linux.zip"
-      - template: templates/zeus-upload.yml
+      - template: zeus-upload.yml
         parameters:
           path: ./breakpad/dist
           pattern: "*.zip"
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
 
   - job: breakpad_windows
     displayName: Breakpad (Windows, x86_64)
     pool:
       vmImage: "vs2015-win2012r2"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd breakpad/
           bash linux/build-shell.sh
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
 
   - job: breakpad_android
     displayName: Breakpad (Android, ARM)

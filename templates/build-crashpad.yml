@@ -4,47 +4,47 @@ jobs:
     pool:
       vmImage: "ubuntu-16.04"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd crashpad/
           bash build-docker.sh
           sudo chown -R $USER ./build
           bash collect-files.sh
-      - template: templates/zeus-upload.yml
+      - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
           pattern: "*.zip"
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
 
   - job: crashpad_macos
     displayName: Crashpad (MacOS, x86_64)
     pool:
       vmImage: "macos-10.13"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd crashpad/
           bash build-shell.sh
           bash collect-files.sh
-      - template: templates/zeus-upload.yml
+      - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
           pattern: "*.zip"
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
 
   - job: crashpad_windows
     displayName: Crashpad (Windows, x86_64)
     pool:
       vmImage: "vs2017-win2016"
     steps:
-      - template: templates/prescript-common.yml
+      - template: prescript-common.yml
       - bash: |
           cd crashpad/
           bash build-shell.sh
           mkdir -p dist/out
           echo > dist/out/crashpad-Windows
-      - template: templates/zeus-upload.yml
+      - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
           pattern: "*.zip"
-      - template: templates/zeus-report.yml
+      - template: zeus-report.yml
