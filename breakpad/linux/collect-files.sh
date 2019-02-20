@@ -21,7 +21,7 @@ mkdir -p $OUT_DIR $ARCHIVES_DIR
 
 # include/
 mkdir $OUT_DIR_INCLUDE
-cp -R $BREAKPAD_DIR/src/{client,common} $OUT_DIR_INCLUDE
+cp -R -L $BREAKPAD_DIR/src/{client,common,google_breakpad,third_party} $OUT_DIR_INCLUDE
 find $OUT_DIR_INCLUDE -type f -not -name '*.h' -delete
 find $OUT_DIR_INCLUDE -type d -empty -exec rmdir -p {} \; 2>/dev/null || true
 
