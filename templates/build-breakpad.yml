@@ -50,11 +50,7 @@ jobs:
       - bash: |
           set -eux
           cd breakpad/
-          ls -alh /mingw64/bin # TODO remove
-          ls /c/ || true
-          ls /c/MinGW/ || true
-          7z || true
-          make
+          make build-windows-all
       - template: zeus-report.yml
 
   - job: breakpad_android
@@ -64,8 +60,8 @@ jobs:
     steps:
       - bash: |
           env
-          find $ANDROID_NDK_HOME
           cd breakpad/
+          find $ANDROID_NDK_HOME
           bash build-shell.sh
         env:
           BREAKPAD_CONFIGURE_FLAGS: >

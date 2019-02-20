@@ -34,4 +34,4 @@ cp $BUILD_DIR/obj/{client/client{.lib,_cc.pdb},util/util{.lib,_cc.pdb},third_par
 ZIP=$SCRIPT_DIR/../bin/zip.py
 
 pushd $DIST_DIR
-$ZIP -r $ARCHIVE_OUT_NAME $PACKAGE_NAME
+$ZIP $ARCHIVE_OUT_NAME $PACKAGE_NAME
