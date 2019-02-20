@@ -1,53 +1,11 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-strategy:
-  matrix:
-    linux:
-      imageName: "ubuntu-16.04"
-    mac:
-      imageName: "macos-10.13"
-    windows:
-      imageName: "vs2017-win2016"
-
 trigger:
   - "*"
 
-pool:
-  vmImage: $(imageName)
-
 pr: none
 
-steps:
-  # Linux
-  - bash: |
-      env
-      cd crashpad/
-      bash build-docker.sh
-      sudo chown -R $USER ./build
-      bash collect-files.sh
-    condition: eq( variables['Agent.OS'], 'Linux' )
-    displayName: Linux Build
-
-  # macOS
-  - bash: |
-      env
-      cd crashpad/
-      bash build-shell.sh
-      bash collect-files.sh
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: MacOS Build
-
-  # Windows
-  - bash: |
-      env
-      cd crashpad/
-      bash build-shell.sh
-      mkdir -p dist/out
-      echo > dist/out/crashpad-Windows
-    condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    displayName: Windows Build
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: ./crashpad/dist/out
+jobs:
+  - template: templates/build-breakpad.yml
+  - template: templates/build-crashpad.yml

@@ -1,0 +1,65 @@
+jobs:
+  - job: breakpad_macos
+    displayName: Breakpad (MacOS, x86_64)
+    pool:
+      vmImage: "macos-10.13"
+    steps:
+      - template: prescript-common.yml
+      - bash: |
+          cd breakpad/
+          make build-macos-all
+      - task: PublishBuildArtifacts@1
+        inputs:
+          artifactName: "breakpad-Darwin.zip"
+          pathToPublish: "breakpad/macos/dist/out/breakpad-Darwin.zip"
+      - template: zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+      - template: zeus-report.yml
+
+  - job: breakpad_linux
+    displayName: Breakpad (Linux, x86_64)
+    pool:
+      vmImage: "ubuntu-16.04"
+    steps:
+      - template: prescript-common.yml
+      - bash: |
+          cd breakpad/
+          make build-linux-docker-all
+      - task: PublishBuildArtifacts@1
+        inputs:
+          artifactName: "breakpad-Linux.zip"
+          pathToPublish: "breakpad/linux/dist/out/breakpad-Linux.zip"
+      - template: zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+      - template: zeus-report.yml
+
+  - job: breakpad_windows
+    displayName: Breakpad (Windows, x86_64)
+    pool:
+      vmImage: "vs2015-win2012r2"
+    steps:
+      - template: prescript-common.yml
+      - bash: |
+          cd breakpad/
+          bash linux/build-shell.sh
+      - template: zeus-report.yml
+
+  - job: breakpad_android
+    displayName: Breakpad (Android, ARM)
+    pool:
+      vmImage: "macos-10.13"
+    steps:
+      - bash: |
+          env
+          find $ANDROID_NDK_HOME
+          cd breakpad/
+          bash build-shell.sh
+        env:
+          BREAKPAD_CONFIGURE_FLAGS: >
+            --host=arm-linux-androideabi
+            --disable-processor
+            --disable-tools
