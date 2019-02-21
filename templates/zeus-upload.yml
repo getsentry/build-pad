@@ -10,7 +10,8 @@ steps:
       zeus job update --status=pending || true
 
       zeus upload -t "application/zip" \
-                  -n "${{ parameters.uploadName }}" || true
+                  -n "${{ parameters.uploadName }}" \
+                  ${{ parameters.path }}/${{ parameters.pattern }} || true
     condition: succeeded()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
