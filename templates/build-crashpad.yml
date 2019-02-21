@@ -43,7 +43,6 @@ jobs:
       - bash: |
           cd crashpad/
           bash build-shell.sh
-          find build/  # TODO remove
           bash ./collect-files-windows.sh
       - template: zeus-upload.yml
         parameters:

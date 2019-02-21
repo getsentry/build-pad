@@ -6,10 +6,11 @@ parameters:
 steps:
   - bash: |
       set -eux
-      zeus upload --build "$BUILD_BUILDID" --job "$AGENT_ID" \
-                  -t "application/zip" \
-                  -n "${{ parameters.uploadName }}" \
-                  ${{ parameters.path }}/${{ parameters.pattern }} || true
+      # In case the initial report failed
+      zeus job update --status=pending || true
+
+      zeus upload -t "application/zip" \
+                  -n "${{ parameters.uploadName }}" || true
     condition: succeeded()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
