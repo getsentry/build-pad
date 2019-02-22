@@ -67,4 +67,6 @@ tags
 dist/
 a.out
 *.dmp
+.env
+tmp/
 # End of https://www.gitignore.io/api/vim,macos,linux

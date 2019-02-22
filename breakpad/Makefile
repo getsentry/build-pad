@@ -31,8 +31,18 @@ build-linux-docker-all:
 	bash ./linux/build-docker.sh
 
 # Windows
-build-windows-all: clean-deps fetch-breakpad build-linux
+build-windows: build-linux
+
+collect-windows:
+	echo 'Not implemented'
+
+build-windows-all: clean-deps fetch-breakpad build-windows collect-windows
 
 # Android
-build-android-all: clean-deps fetch-breakpad
+build-android:
 	bash ./android/build.sh
+
+collect-android:
+	bash ./android/collect-files.sh
+
+build-android-all: clean-deps fetch-breakpad build-android collect-android

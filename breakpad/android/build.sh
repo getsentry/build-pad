@@ -3,8 +3,6 @@ set -eux
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ANDROID_NDK_HOME=${ANDROID_NDK_HOME:=ANDROID_NDK_ROOT}
-
 # NDK version
 cat ${ANDROID_NDK_HOME}/source.properties
 
