@@ -51,20 +51,26 @@ jobs:
           set -eux
           cd breakpad/
           make build-windows-all
+      - template: zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+          uploadName: "breakpad-Windows-x86_64.zip"
       - template: zeus-report.yml
 
   - job: breakpad_android
-    displayName: Breakpad (Android, ARM)
+    displayName: Breakpad (Android, all)
     pool:
       vmImage: "macos-10.13"
     steps:
+      - template: prescript-common.yml
       - bash: |
-          env
+          set -eux
           cd breakpad/
-          find $ANDROID_NDK_HOME
-          bash build-shell.sh
-        env:
-          BREAKPAD_CONFIGURE_FLAGS: >
-            --host=arm-linux-androideabi
-            --disable-processor
-            --disable-tools
+          make build-android-all
+      - template: zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+          uploadName: "breakpad-Android-all.zip"
+      - template: zeus-report.yml
