@@ -31,7 +31,8 @@ build-linux-docker-all:
 	bash ./linux/build-docker.sh
 
 # Windows
-build-windows: build-linux
+build-windows:
+	bash ./windows/build.sh
 
 collect-windows:
 	echo 'Not implemented'
