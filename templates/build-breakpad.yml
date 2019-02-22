@@ -59,7 +59,7 @@ jobs:
       - template: zeus-report.yml
 
   - job: breakpad_android
-    displayName: Breakpad (Android, ARM)
+    displayName: Breakpad (Android, all)
     pool:
       vmImage: "macos-10.13"
     steps:
