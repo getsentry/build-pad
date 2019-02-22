@@ -59,10 +59,9 @@ jobs:
       vmImage: "macos-10.13"
     steps:
       - bash: |
-          env
+          set -eux
           cd breakpad/
-          find $ANDROID_NDK_HOME
-          bash build-shell.sh
+          make build-android-all
         env:
           BREAKPAD_CONFIGURE_FLAGS: >
             --host=arm-linux-androideabi

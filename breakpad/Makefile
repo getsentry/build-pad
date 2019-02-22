@@ -9,6 +9,7 @@ clean-all: clean-deps
 fetch-breakpad:
 	bash fetch-all.sh
 
+# MacOS
 build-macos:
 	$(MAKE) -C macos
 
@@ -17,6 +18,7 @@ collect-macos:
 
 build-macos-all: clean-deps fetch-breakpad build-macos collect-macos
 
+# Linux
 build-linux:
 	bash ./linux/build-shell.sh
 
@@ -28,9 +30,9 @@ build-linux-all: clean-deps fetch-breakpad build-linux collect-linux
 build-linux-docker-all:
 	bash ./linux/build-docker.sh
 
+# Windows
 build-windows-all: clean-deps fetch-breakpad build-linux
 
+# Android
 build-android-all: clean-deps fetch-breakpad
-	cd deps/breakpad/android/sample_app
-	cat $(ANDROID_NDK_HOME)/source.properties
-	$(ANDROID_NDK_HOME)/ndk-build --debug
+	bash ./android/build.sh
