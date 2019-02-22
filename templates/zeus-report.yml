@@ -2,7 +2,7 @@ steps:
   - bash: |
       set -eux
       env
-      zeus job update --status=failed --build "$BUILD_BUILDID" --job "$AGENT_ID" --ref $(git rev-parse HEAD) || true
+      zeus job update --status=failed || true
     condition: failed()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
@@ -11,7 +11,7 @@ steps:
   - bash: |
       set -eux
       env
-      zeus job update --status=passed --build "$BUILD_BUILDID" --job "$AGENT_ID" --ref $(git rev-parse HEAD) || true
+      zeus job update --status=passed || true
     condition: succeeded()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)

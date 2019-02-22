@@ -25,9 +25,7 @@ steps:
 
   - bash: |
       set -eux
-      zeus job update --status=pending --build "$BUILD_BUILDID" \
-                      --job "$AGENT_ID" --ref $(git rev-parse HEAD) \
-                      --job-label "$SYSTEM_PHASEDISPLAYNAME" || true
+      zeus job update --status=pending || true
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
     displayName: Register build on Zeus

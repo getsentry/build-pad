@@ -1,13 +1,18 @@
 parameters:
   path: ""
   pattern: ""
+  uploadName: ""
 
 steps:
   - bash: |
       set -eux
-      zeus upload --build "$BUILD_BUILDID" --job "$AGENT_ID" -t "application/zip" \
+      # In case the initial report failed
+      zeus job update --status=pending || true
+
+      zeus upload -t "application/zip" \
+                  -n "${{ parameters.uploadName }}" \
                   ${{ parameters.path }}/${{ parameters.pattern }} || true
     condition: succeeded()
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
-    displayName: Post-build task (success)
+    displayName: Upload artifacts to Zeus
