@@ -29,3 +29,8 @@ build-linux-docker-all:
 	bash ./linux/build-docker.sh
 
 build-windows-all: clean-deps fetch-breakpad build-linux
+
+build-android-all: clean-deps fetch-breakpad
+	cd deps/breakpad/android/sample_app
+	cat $(ANDROID_NDK_HOME)/source.properties
+	$(ANDROID_NDK_HOME)/ndk-build --debug
