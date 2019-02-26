@@ -35,7 +35,7 @@ build-windows:
 	bash ./windows/build.sh
 
 collect-windows:
-	echo 'Not implemented'
+	bash ./windows/collect-files.sh
 
 build-windows-all: clean-deps fetch-breakpad build-windows collect-windows
 

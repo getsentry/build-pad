@@ -1,3 +1,11 @@
+# .gitignore
 build/
 deps/
 dist/
+
+# Windows builds
+Debug/
+Release/
+*.vcxproj.user
+*.vcxproj.filters
+.vs/
