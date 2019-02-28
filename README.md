@@ -1,7 +1,5 @@
 # crashpad-build
 
-Automated builds for crashpad https://chromium.googlesource.com/crashpad/crashpad/
+Automated builds for [crashpad](https://chromium.googlesource.com/crashpad/crashpad/) and [breakpad](https://chromium.googlesource.com/breakpad/breakpad).
 
-## Build
-
-    docker build -t getsentry-crashpad .
+This is a work in progress.
