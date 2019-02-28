@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-###
-# Breakpad
-###
 set -eux
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
 
-# TODO build with vscode?
-not_implemented
+MSBUILD="/c/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/Bin/MSBuild.exe"
 
-./configure ${BREAKPAD_CONFIGURE_FLAGS:-}
-make
+"$MSBUILD" BreakpadTools.sln //m //p:Configuration=Release //p:Platform=x64 //t:Clean,Build
+
+# ./crash
+
+find .
