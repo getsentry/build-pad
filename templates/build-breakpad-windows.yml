@@ -1,0 +1,22 @@
+parameters:
+  arch: ""
+
+jobs:
+  - job: breakpad_windows_${{ parameters.arch }}
+    displayName: Breakpad (Windows, ${{ parameters.arch }})
+    pool:
+      vmImage: "vs2017-win2016"
+    steps:
+      - template: prescript-common.yml
+      - bash: |
+          set -eux
+          cd breakpad/
+          make build-windows-all
+        env:
+          BUILD_ARCH: "${{ parameters.arch }}"
+      - template: zeus-upload.yml
+        parameters:
+          path: ./breakpad/dist
+          pattern: "*.zip"
+          uploadName: "breakpad-Windows-${{ parameters.arch }}.zip"
+      - template: zeus-report.yml

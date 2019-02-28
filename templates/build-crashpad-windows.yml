@@ -1,0 +1,22 @@
+parameters:
+  arch: ""
+
+jobs:
+  - job: crashpad_windows_${{ parameters.arch }}
+    displayName: Crashpad (Windows, ${{ parameters.arch }})
+    pool:
+      vmImage: "vs2017-win2016"
+    steps:
+      - template: prescript-common.yml
+      - bash: |
+          cd crashpad/
+          bash ./build-shell.sh
+          bash ./collect-files-windows.sh
+        env:
+          BUILD_ARCH: "${{ parameters.arch }}"
+      - template: zeus-upload.yml
+        parameters:
+          path: ./crashpad/dist/out
+          pattern: "*.zip"
+          uploadName: "crashpad-Windows-${{ parameters.arch }}.zip"
+      - template: zeus-report.yml

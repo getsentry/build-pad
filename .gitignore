@@ -69,4 +69,7 @@ a.out
 *.dmp
 .env
 tmp/
+
+crashpad-*.zip
+breakpad-*.zip
 # End of https://www.gitignore.io/api/vim,macos,linux

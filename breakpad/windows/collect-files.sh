@@ -14,9 +14,16 @@ OUT_DIR_BIN="${OUT_DIR}/bin"
 OUT_DIR_INCLUDE="${OUT_DIR}/include"
 OUT_DIR_LIB="${OUT_DIR}/lib"
 BREAKPAD_DIR="${SCRIPT_DIR}/../deps/breakpad"
-BUILD_DIR="${SCRIPT_DIR}/x64/Release"
 
 VS_DIR="/c/Program Files (x86)/Microsoft Visual Studio/2017"
+
+if [[ "${BUILD_ARCH:-}" == "i686" ]]; then
+    BUILD_DIR="${SCRIPT_DIR}/Release"
+    MSDIA_DLL_PATH="$VS_DIR/Enterprise/DIA SDK/bin/msdia140.dll"
+else
+    BUILD_DIR="${SCRIPT_DIR}/x64/Release"
+    MSDIA_DLL_PATH="$VS_DIR/Enterprise/DIA SDK/bin/amd64/msdia140.dll"
+fi
 
 rm -rf $OUT_DIR $ARCHIVE_OUT_NAME $ARCHIVES_DIR
 mkdir -p $OUT_DIR $ARCHIVES_DIR
@@ -29,13 +36,13 @@ find $OUT_DIR_INCLUDE -type d -empty -exec rmdir -p {} \; 2>/dev/null || true
 
 # bin/
 mkdir $OUT_DIR_BIN
-cp $BUILD_DIR/{crash.*,dump_syms.*} $OUT_DIR_BIN
+cp $BUILD_DIR/{crash.*,dump_syms.*} "$OUT_DIR_BIN"
 # msdia140.dll is needed for dump_syms.exe
-cp "$VS_DIR/Enterprise/DIA SDK/bin/amd64/msdia140.dll" $OUT_DIR_BIN
+cp "$MSDIA_DLL_PATH" "$OUT_DIR_BIN"
 
 # lib/
 mkdir $OUT_DIR_LIB
-cp $BUILD_DIR/libbreakpad_client.* $OUT_DIR_LIB
+cp $BUILD_DIR/libbreakpad_client.* "$OUT_DIR_LIB"
 
 ZIP=$SCRIPT_DIR/../../bin/zip.py
 

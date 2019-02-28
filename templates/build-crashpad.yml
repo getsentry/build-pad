@@ -1,4 +1,5 @@
 jobs:
+  # Mac
   - job: crashpad_macos
     displayName: Crashpad (MacOS, x86_64)
     pool:
@@ -16,6 +17,7 @@ jobs:
           uploadName: "crashpad-Darwin-x86_64.zip"
       - template: zeus-report.yml
 
+  # Linux
   - job: crashpad_linux
     displayName: Crashpad (Linux, x86_64)
     pool:
@@ -34,19 +36,10 @@ jobs:
           uploadName: "crashpad-Linux-x86_64.zip"
       - template: zeus-report.yml
 
-  - job: crashpad_windows
-    displayName: Crashpad (Windows, x86_64)
-    pool:
-      vmImage: "vs2017-win2016"
-    steps:
-      - template: prescript-common.yml
-      - bash: |
-          cd crashpad/
-          bash build-shell.sh
-          bash ./collect-files-windows.sh
-      - template: zeus-upload.yml
-        parameters:
-          path: ./crashpad/dist/out
-          pattern: "*.zip"
-          uploadName: "crashpad-Windows-x86_64.zip"
-      - template: zeus-report.yml
+  # Windows
+  - template: build-crashpad-windows.yml
+    parameters:
+      arch: "i686"
+  - template: build-crashpad-windows.yml
+    parameters:
+      arch: "x86_64"

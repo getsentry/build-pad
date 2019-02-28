@@ -1,4 +1,5 @@
 jobs:
+  # MacOS
   - job: breakpad_macos
     displayName: Breakpad (MacOS, x86_64)
     pool:
@@ -19,6 +20,7 @@ jobs:
           uploadName: "breakpad-Darwin-x86_64.zip"
       - template: zeus-report.yml
 
+  # Linux
   - job: breakpad_linux
     displayName: Breakpad (Linux, x86_64)
     pool:
@@ -41,23 +43,15 @@ jobs:
           uploadName: "breakpad-Linux-x86_64.zip"
       - template: zeus-report.yml
 
-  - job: breakpad_windows
-    displayName: Breakpad (Windows, x86_64)
-    pool:
-      vmImage: "vs2017-win2016"
-    steps:
-      - template: prescript-common.yml
-      - bash: |
-          set -eux
-          cd breakpad/
-          make build-windows-all
-      - template: zeus-upload.yml
-        parameters:
-          path: ./breakpad/dist
-          pattern: "*.zip"
-          uploadName: "breakpad-Windows-x86_64.zip"
-      - template: zeus-report.yml
+  # Windows
+  - template: build-breakpad-windows.yml
+    parameters:
+      arch: "i686"
+  - template: build-breakpad-windows.yml
+    parameters:
+      arch: "x86_64"
 
+  # Android
   - job: breakpad_android
     displayName: Breakpad (Android, all)
     pool:

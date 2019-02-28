@@ -17,7 +17,7 @@ fi
 
 export PATH="$(pwd)/depot_tools:$PATH"
 
-if [ "${AGENT_OS:-}" == "Windows_NT" ]; then
+if [[ "${AGENT_OS:-}" == "Windows_NT" ]]; then
   FETCH_CMD='fetch.bat'
   GN_CMD='gn.bat'
   NINJA_CMD='ninja.exe'
@@ -27,6 +27,12 @@ else
   GN_CMD='gn'
   NINJA_CMD='ninja'
   GCLIENT_CMD='gclient'
+fi
+
+if [[ "${BUILD_ARCH:-}" == "i686" ]]; then
+    PLATFORM="x86"
+else
+    PLATFORM="x64"
 fi
 
 # Checkout and sync crashpad
@@ -48,6 +54,7 @@ python -V
 OUT_DIR=out/Default
 mkdir -p $OUT_DIR
 cp $SCRIPT_DIR/args/args.gn $OUT_DIR
+echo "target_cpu = \"${PLATFORM}\"" >> $OUT_DIR/args.gn
 
 $GN_CMD gen "$OUT_DIR"
-$NINJA_CMD -C "$OUT_DIR"
+$NINJA_CMD -C "$OUT_DIR" -v
