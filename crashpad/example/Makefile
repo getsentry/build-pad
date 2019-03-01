@@ -1,2 +1,2 @@
 linux:
-	clang++ test.cpp  -I include/ -I include/mini_chromium/ --std=c++14 -L ./lib -Wl,--start-group -lutil  -lbase -lclient -Wl,--end-group
+	g++ test.cpp  -I ../dist/crashpad-Linux/include/ -I ../dist/crashpad-Linux/include/mini_chromium/ --std=c++11 -L ../dist/crashpad-Linux/lib -Wl,--start-group -lutil  -lbase -lclient -Wl,--end-group
