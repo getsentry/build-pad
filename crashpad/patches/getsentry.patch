@@ -1,0 +1,1345 @@
+From c8cdb1a4ddd9b48dd76280f9742b4efc4ec840ec Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 13:13:06 +0100
+Subject: [PATCH 1/9] Add Makefile with helpers
+
+---
+ Makefile | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 Makefile
+
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 00000000..08524f9c
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,13 @@
++SHELL := /bin/bash
++PATH := $(PWD)/../depot_tools:$(PATH)
++
++all:
++	echo 'Nothing to do' && exit 1
++
++build:
++	gn gen out/Default
++	ninja -C out/Default
++.PHONY: build
++
++update:
++	gclient sync
+-- 
+2.17.2 (Apple Git-113)
+
+
+From e9ab047cf48ae745e8e817b2c6d41141ed7a7f01 Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 16:24:59 +0100
+Subject: [PATCH 2/9] Update Makefile
+
+---
+ Makefile | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 08524f9c..b741664b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -11,3 +11,15 @@ build:
+ 
+ update:
+ 	gclient sync
++
++example:
++	g++ -g \
++		-o example example.cpp \
++		-I. -I./third_party/mini_chromium/mini_chromium \
++		-std=c++14 \
++		-L./out/Default/obj/client -lclient \
++		-L./out/Default/obj/util -lutil \
++		-L./out/Default/obj/third_party/mini_chromium/mini_chromium/base -lbase \
++		-framework Foundation -framework Security -framework CoreText \
++		-framework CoreGraphics -framework IOKit -lbsm
++.PHONY: example
+-- 
+2.17.2 (Apple Git-113)
+
+
+From d833d958a662be4394a34a4105d37bb174265f09 Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 16:31:35 +0100
+Subject: [PATCH 3/9] feat: Add attachments support to crashpad handler
+
+---
+ README.md               |  6 ++++++
+ handler/handler_main.cc | 47 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 53 insertions(+)
+
+diff --git a/README.md b/README.md
+index b20777bb..0798f000 100644
+--- a/README.md
++++ b/README.md
+@@ -40,3 +40,9 @@ https://chromium.googlesource.com/crashpad/crashpad.
+    perform automated builds and tests.
+  * [crashpad-dev](https://groups.google.com/a/chromium.org/group/crashpad-dev)
+    is the Crashpad developers’ mailing list.
++
++## Sentry modifications
++
++File attachments support for MacOS and Windows.
++
++Based on changes made in https://github.com/Youw/crashpad/, distributed with Apache 2.0 License.
+diff --git a/handler/handler_main.cc b/handler/handler_main.cc
+index 31686b3e..6d7850b9 100644
+--- a/handler/handler_main.cc
++++ b/handler/handler_main.cc
+@@ -149,6 +149,9 @@ void Usage(const base::FilePath& me) {
+ #endif  // OS_LINUX || OS_ANDROID
+ "      --url=URL               send crash reports to this Breakpad server URL,\n"
+ "                              only if uploads are enabled for the database\n"
++#if defined(OS_WIN) || defined(OS_MACOSX)
++"      --attachment=NAME=PATH  attach a copy of a file, along with a crash dump\n"
++#endif // OS_WIN || OS_MACOSX
+ "      --help                  display this help and exit\n"
+ "      --version               output version information and exit\n",
+           me.value().c_str());
+@@ -158,6 +161,7 @@ void Usage(const base::FilePath& me) {
+ struct Options {
+   std::map<std::string, std::string> annotations;
+   std::map<std::string, std::string> monitor_self_annotations;
++  std::map<std::string, base::FilePath> attachments;
+   std::string url;
+   base::FilePath database;
+   base::FilePath metrics_dir;
+@@ -204,6 +208,33 @@ bool AddKeyValueToMap(std::map<std::string, std::string>* map,
+   return true;
+ }
+ 
++#if defined(OS_WIN) || defined(OS_MACOSX)
++// Overloaded version, to accept base::FilePath as a VALUE.
++bool AddKeyValueToMap(std::map<std::string, base::FilePath>* map,
++                      const std::string& key_value,
++                      const char* argument) {
++  std::string key;
++  std::string raw_value;
++  if (!SplitStringFirst(key_value, '=', &key, &raw_value)) {
++    LOG(ERROR) << argument << " requires NAME=PATH";
++    return false;
++  }
++
++#ifdef OS_WIN
++  base::FilePath value(base::UTF8ToUTF16(raw_value));
++#else
++  base::FilePath value(raw_value);
++#endif
++
++  base::FilePath old_value;
++  if (!MapInsertOrReplace(map, key, value, &old_value)) {
++    LOG(WARNING) << argument << " has duplicate name " << key
++                 << ", discarding value " << old_value.value().c_str();
++  }
++  return true;
++}
++#endif // OS_WIN || OS_MACOSX
++
+ // Calls Metrics::HandlerLifetimeMilestone, but only on the first call. This is
+ // to prevent multiple exit events from inadvertently being recorded, which
+ // might happen if a crash occurs during destruction in what would otherwise be
+@@ -553,6 +584,9 @@ int HandlerMain(int argc,
+     kOptionSanitizationInformation,
+ #endif
+     kOptionURL,
++#if defined(OS_WIN) || defined(OS_MACOSX)
++    kOptionAttachment,
++#endif // OS_WIN || OS_MACOSX
+ 
+     // Standard options.
+     kOptionHelp = -2,
+@@ -612,6 +646,9 @@ int HandlerMain(int argc,
+      kOptionSanitizationInformation},
+ #endif  // OS_LINUX || OS_ANDROID
+     {"url", required_argument, nullptr, kOptionURL},
++#if defined(OS_WIN) || defined(OS_MACOSX)
++    {"attachment", required_argument, nullptr, kOptionAttachment},
++#endif // OS_WIN || O_MACOSX
+     {"help", no_argument, nullptr, kOptionHelp},
+     {"version", no_argument, nullptr, kOptionVersion},
+     {nullptr, 0, nullptr, 0},
+@@ -749,6 +786,14 @@ int HandlerMain(int argc,
+         options.url = optarg;
+         break;
+       }
++#if defined(OS_WIN) || defined(OS_MACOSX)
++      case kOptionAttachment: {
++        if (!AddKeyValueToMap(&options.attachments, optarg, "--attachment")) {
++          return ExitFailure();
++        }
++        break;
++      }
++#endif // OS_WIN || OS_MACOSX
+       case kOptionHelp: {
+         Usage(me);
+         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
+@@ -875,6 +920,8 @@ int HandlerMain(int argc,
+ #if defined(OS_FUCHSIA)
+       // TODO(scottmg): Process level file attachments, and for all platforms.
+       nullptr,
++#elif defined(OS_WIN) || defined(OS_MACOSX)
++      &options.attachments,
+ #endif
+       user_stream_sources);
+ 
+-- 
+2.17.2 (Apple Git-113)
+
+
+From c71a19f67ab3be1963966d8a02fa053f42f64ced Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 18:35:38 +0100
+Subject: [PATCH 4/9] feat: Add client handler function with attachments
+
+---
+ client/crashpad_client.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/client/crashpad_client.h b/client/crashpad_client.h
+index 8bf43acd..3275d58d 100644
+--- a/client/crashpad_client.h
++++ b/client/crashpad_client.h
+@@ -112,6 +112,19 @@ class CrashpadClient {
+                     bool restartable,
+                     bool asynchronous_start);
+ 
++#if defined(OS_MACOSX)
++  bool StartHandlerWithAttachments(
++      const base::FilePath& handler,
++      const base::FilePath& database,
++      const base::FilePath& metrics_dir,
++      const std::string& url,
++      const std::map<std::string, std::string>& annotations,
++      const std::map<std::string, std::string>& fileAttachments,
++      const std::vector<std::string>& arguments,
++      bool restartable,
++      bool asynchronous_start);
++#endif
++
+ #if defined(OS_ANDROID) || DOXYGEN
+   //! \brief Installs a signal handler to execute `/system/bin/app_process` and
+   //!     load a Java class in response to a crash.
+-- 
+2.17.2 (Apple Git-113)
+
+
+From e02bf1f0e2dc0c2aaa89f135fa3a91866093ac37 Mon Sep 17 00:00:00 2001
+From: Ihor Dutchak <ihor.youw@gmail.com>
+Date: Tue, 27 Nov 2018 01:31:49 +0200
+Subject: [PATCH 5/9] Add attachments support to macOS crash report database
+
+---
+ client/crash_report_database.cc               |   2 +-
+ client/crash_report_database.h                |   4 +-
+ client/crash_report_database_mac.mm           | 147 +++++++++++++++++-
+ handler/handler_main.cc                       |   3 -
+ .../linux/crash_report_exception_handler.cc   |  20 +++
+ .../linux/crash_report_exception_handler.h    |   7 +
+ handler/mac/crash_report_exception_handler.cc |  20 +++
+ handler/mac/crash_report_exception_handler.h  |   7 +
+ 8 files changed, 198 insertions(+), 12 deletions(-)
+
+diff --git a/client/crash_report_database.cc b/client/crash_report_database.cc
+index d300a8f9..b1d0eaf6 100644
+--- a/client/crash_report_database.cc
++++ b/client/crash_report_database.cc
+@@ -78,7 +78,7 @@ CrashReportDatabase::UploadReport::~UploadReport() {
+   }
+ }
+ 
+-bool CrashReportDatabase::UploadReport::Initialize(const base::FilePath path,
++bool CrashReportDatabase::UploadReport::Initialize(const base::FilePath& path,
+                                                    CrashReportDatabase* db) {
+   database_ = db;
+   InitializeAttachments();
+diff --git a/client/crash_report_database.h b/client/crash_report_database.h
+index 1d6a9ed0..ebd1dc73 100644
+--- a/client/crash_report_database.h
++++ b/client/crash_report_database.h
+@@ -117,8 +117,6 @@ class CrashReportDatabase {
+ 
+     //! \brief Adds an attachment to the report.
+     //!
+-    //! \note This function is not yet implemented on macOS or Windows.
+-    //!
+     //! \param[in] name The key and name for the attachment, which will be
+     //!     included in the http upload. The attachment will not appear in the
+     //!     minidump report. \a name should only use characters from the set
+@@ -171,7 +169,7 @@ class CrashReportDatabase {
+     friend class CrashReportDatabaseMac;
+     friend class CrashReportDatabaseWin;
+ 
+-    bool Initialize(const base::FilePath path, CrashReportDatabase* database);
++    bool Initialize(const base::FilePath& path, CrashReportDatabase* database);
+     void InitializeAttachments();
+ 
+     std::unique_ptr<FileReader> reader_;
+diff --git a/client/crash_report_database_mac.mm b/client/crash_report_database_mac.mm
+index 414dd5a4..75a09264 100644
+--- a/client/crash_report_database_mac.mm
++++ b/client/crash_report_database_mac.mm
+@@ -34,7 +34,9 @@
+ #include "base/strings/stringprintf.h"
+ #include "base/strings/sys_string_conversions.h"
+ #include "client/settings.h"
++#include "util/file/directory_reader.h"
+ #include "util/file/file_io.h"
++#include "util/file/filesystem.h"
+ #include "util/mac/xattr.h"
+ #include "util/misc/initialization_state_dcheck.h"
+ #include "util/misc/metrics.h"
+@@ -46,6 +48,7 @@
+ constexpr char kWriteDirectory[] = "new";
+ constexpr char kUploadPendingDirectory[] = "pending";
+ constexpr char kCompletedDirectory[] = "completed";
++constexpr char kAttachmentsDirectory[] = "attachments";
+ 
+ constexpr char kSettings[] = "settings.dat";
+ 
+@@ -148,6 +151,10 @@ OperationStatus SkipReportUpload(const UUID& uuid,
+                                    Metrics::CrashSkippedReason reason) override;
+   OperationStatus DeleteReport(const UUID& uuid) override;
+   OperationStatus RequestUpload(const UUID& uuid) override;
++  int CleanDatabase(time_t lockfile_ttl) override;
++
++  // Build a filepath for the directory for the report to hold attachments.
++  base::FilePath AttachmentsPath(const UUID& uuid);
+ 
+  private:
+   // CrashReportDatabase:
+@@ -239,6 +246,16 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+       const base::FilePath& report_path,
+       base::FilePath* out_path);
+ 
++  //! \brief Cleans any attachments that have no associated report.
++  void CleanOrphanedAttachments();
++
++  //! \brief Attempt to remove any attachments associated with the given
++  //!     report UUID.
++  //!     There may not be any, so failing is not an error.
++  //!
++  //! \param[in] uuid The report identifier which attachments to remove.
++  void RemoveAttachmentsByUUID(const UUID& uuid);
++
+   base::FilePath base_dir_;
+   Settings settings_;
+   bool xattr_new_names_;
+@@ -249,12 +266,55 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+ 
+ FileWriter* CrashReportDatabase::NewReport::AddAttachment(
+     const std::string& name) {
+-  // Attachments aren't implemented in the Mac database yet.
+-  return nullptr;
++  if (!AttachmentNameIsOK(name)) {
++    LOG(ERROR) << "invalid name for attachment " << name;
++    return nullptr;
++  }
++
++  base::FilePath attachments_dir =
++      static_cast<CrashReportDatabaseMac*>(database_)->AttachmentsPath(
++          uuid_);
++  if (!LoggingCreateDirectory(
++        attachments_dir, FilePermissions::kOwnerOnly, true)) {
++    return nullptr;
++  }
++
++  base::FilePath path = attachments_dir.Append(name);
++
++  auto writer = std::make_unique<FileWriter>();
++  if (!writer->Open(
++      path, FileWriteMode::kCreateOrFail, FilePermissions::kOwnerOnly)) {
++    LOG(ERROR) << "could not open " << path.value();
++    return nullptr;
++  }
++  attachment_writers_.emplace_back(std::move(writer));
++  attachment_removers_.emplace_back(ScopedRemoveFile(path));
++  return attachment_writers_.back().get();
+ }
+ 
+ void CrashReportDatabase::UploadReport::InitializeAttachments() {
+-  // Attachments aren't implemented in the Mac database yet.
++  base::FilePath attachments_dir =
++      static_cast<CrashReportDatabaseMac*>(database_)->AttachmentsPath(
++          uuid);
++  DirectoryReader reader;
++  if (!reader.Open(attachments_dir)) {
++    return;
++  }
++
++  base::FilePath filename;
++  DirectoryReader::Result dir_result;
++  while ((dir_result = reader.NextFile(&filename)) ==
++      DirectoryReader::Result::kSuccess) {
++    const base::FilePath filepath(attachments_dir.Append(filename));
++    std::unique_ptr<FileReader> reader(std::make_unique<FileReader>());
++    if (!reader->Open(filepath)) {
++      LOG(ERROR) << "attachment " << filepath.value()
++                 << " couldn't be opened, skipping";
++      continue;
++    }
++    attachment_readers_.emplace_back(std::move(reader));
++    attachment_map_[filename.value()] = attachment_readers_.back().get();
++  }
+ }
+ 
+ CrashReportDatabaseMac::CrashReportDatabaseMac(const base::FilePath& path)
+@@ -285,6 +345,9 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+       return false;
+   }
+ 
++  if (!CreateOrEnsureDirectoryExists(base_dir_.Append(kAttachmentsDirectory)))
++    return false;
++
+   if (!settings_.Initialize(base_dir_.Append(kSettings)))
+     return false;
+ 
+@@ -378,6 +441,14 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+   }
+   ignore_result(report->file_remover_.release());
+ 
++  // Close all the attachments and disarm their removers too.
++  for (auto& writer : report->attachment_writers_) {
++    writer->Close();
++  }
++  for (auto& remover : report->attachment_removers_) {
++    ignore_result(remover.release());
++  }
++
+   Metrics::CrashReportPending(Metrics::PendingReportReason::kNewlyCreated);
+   Metrics::CrashReportSize(size);
+ 
+@@ -441,11 +512,10 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+   if (!ReadReportMetadataLocked(upload_report->file_path, upload_report.get()))
+     return kDatabaseError;
+ 
+-  if (!upload_report->reader_->Open(upload_report->file_path)) {
++  if (!upload_report->Initialize(upload_report->file_path, this)) {
+     return kFileSystemError;
+   }
+ 
+-  upload_report->database_ = this;
+   upload_report->lock_fd.reset(lock.release());
+   upload_report->report_metrics_ = report_metrics;
+   report->reset(upload_report.release());
+@@ -541,6 +611,8 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+     return kFileSystemError;
+   }
+ 
++  RemoveAttachmentsByUUID(uuid);
++
+   return kNoError;
+ }
+ 
+@@ -625,6 +697,22 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+   return kNoError;
+ }
+ 
++int CrashReportDatabaseMac::CleanDatabase(time_t lockfile_ttl) {
++  (void)lockfile_ttl;
++  CleanOrphanedAttachments();
++  return 0;
++}
++
++base::FilePath CrashReportDatabaseMac::AttachmentsPath(const UUID& uuid) {
++#if defined(OS_WIN)
++  const std::wstring uuid_string = uuid.ToString16();
++#else
++  const std::string uuid_string = uuid.ToString();
++#endif
++
++  return base_dir_.Append(kAttachmentsDirectory).Append(uuid_string);
++}
++
+ // static
+ base::ScopedFD CrashReportDatabaseMac::ObtainReportLock(
+     const base::FilePath& path) {
+@@ -747,6 +835,55 @@ OperationStatus ReportsInDirectory(const base::FilePath& path,
+   return kNoError;
+ }
+ 
++void CrashReportDatabaseMac::CleanOrphanedAttachments() {
++  base::FilePath root_attachments_dir(base_dir_.Append(kAttachmentsDirectory));
++  DirectoryReader reader;
++  if (!reader.Open(root_attachments_dir)) {
++    LOG(ERROR) << "no attachments dir";
++    return;
++  }
++
++  base::FilePath filename;
++  DirectoryReader::Result result;
++  while ((result = reader.NextFile(&filename)) ==
++         DirectoryReader::Result::kSuccess) {
++    const base::FilePath path(root_attachments_dir.Append(filename));
++    if (IsDirectory(path, false)) {
++      UUID uuid;
++      if (!uuid.InitializeFromString(filename.value())) {
++        LOG(ERROR) << "unexpected attachment dir name " << filename.value();
++        continue;
++      }
++
++      base::FilePath report_path = LocateCrashReport(uuid, kReportStateAny);
++      if (!report_path.empty()) {
++        continue;
++      }
++
++      // Couldn't find a report, assume these attachments are orphaned.
++      RemoveAttachmentsByUUID(uuid);
++    }
++  }
++}
++
++void CrashReportDatabaseMac::RemoveAttachmentsByUUID(const UUID &uuid) {
++  base::FilePath attachments_dir = AttachmentsPath(uuid);
++  DirectoryReader reader;
++  if (!reader.Open(attachments_dir)) {
++    return;
++  }
++
++  base::FilePath filename;
++  DirectoryReader::Result result;
++  while ((result = reader.NextFile(&filename)) ==
++         DirectoryReader::Result::kSuccess) {
++    const base::FilePath filepath(attachments_dir.Append(filename));
++    LoggingRemoveFile(filepath);
++  }
++
++  LoggingRemoveDirectory(attachments_dir);
++}
++
+ std::unique_ptr<CrashReportDatabase> InitializeInternal(
+     const base::FilePath& path,
+     bool may_create) {
+diff --git a/handler/handler_main.cc b/handler/handler_main.cc
+index 6d7850b9..b223c909 100644
+--- a/handler/handler_main.cc
++++ b/handler/handler_main.cc
+@@ -207,8 +207,6 @@ bool AddKeyValueToMap(std::map<std::string, std::string>* map,
+   }
+   return true;
+ }
+-
+-#if defined(OS_WIN) || defined(OS_MACOSX)
+ // Overloaded version, to accept base::FilePath as a VALUE.
+ bool AddKeyValueToMap(std::map<std::string, base::FilePath>* map,
+                       const std::string& key_value,
+@@ -233,7 +231,6 @@ bool AddKeyValueToMap(std::map<std::string, base::FilePath>* map,
+   }
+   return true;
+ }
+-#endif // OS_WIN || OS_MACOSX
+ 
+ // Calls Metrics::HandlerLifetimeMilestone, but only on the first call. This is
+ // to prevent multiple exit events from inadvertently being recorded, which
+diff --git a/handler/linux/crash_report_exception_handler.cc b/handler/linux/crash_report_exception_handler.cc
+index 71a7009b..2c8fbe82 100644
+--- a/handler/linux/crash_report_exception_handler.cc
++++ b/handler/linux/crash_report_exception_handler.cc
+@@ -35,10 +35,12 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
+     CrashReportDatabase* database,
+     CrashReportUploadThread* upload_thread,
+     const std::map<std::string, std::string>* process_annotations,
++    const std::map<std::string, base::FilePath>* process_attachments,
+     const UserStreamDataSources* user_stream_data_sources)
+     : database_(database),
+       upload_thread_(upload_thread),
+       process_annotations_(process_annotations),
++      process_attachments_(process_attachments),
+       user_stream_data_sources_(user_stream_data_sources) {}
+ 
+ CrashReportExceptionHandler::~CrashReportExceptionHandler() = default;
+@@ -173,6 +175,24 @@ bool CrashReportExceptionHandler::HandleExceptionWithConnection(
+       return false;
+     }
+ 
++    if (process_attachments_) {
++      // Note that attachments are read at this point each time rather than once
++      // so that if the contents of the file has changed it will be re-read for
++      // each upload (e.g. in the case of a log file).
++      for (const auto& it : *process_attachments_) {
++        FileWriter* writer = new_report->AddAttachment(it.first);
++        if (writer) {
++          std::string contents;
++          if (!LoggingReadEntireFile(it.second, &contents)) {
++            // Not being able to read the file isn't considered fatal, and
++            // should not prevent the report from being processed.
++            continue;
++          }
++          writer->Write(contents.data(), contents.size());
++        }
++      }
++    }
++
+     UUID uuid;
+     database_status =
+         database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
+diff --git a/handler/linux/crash_report_exception_handler.h b/handler/linux/crash_report_exception_handler.h
+index 9951d840..1be7015f 100644
+--- a/handler/linux/crash_report_exception_handler.h
++++ b/handler/linux/crash_report_exception_handler.h
+@@ -18,6 +18,7 @@
+ #include <map>
+ #include <string>
+ 
++#include "base/files/file_path.h"
+ #include "base/macros.h"
+ #include "client/crash_report_database.h"
+ #include "handler/crash_report_upload_thread.h"
+@@ -50,6 +51,10 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+   //!     To interoperate with Breakpad servers, the recommended practice is to
+   //!     specify values for the `"prod"` and `"ver"` keys as process
+   //!     annotations.
++  //! \param[in] process_attachments A map of file name keys to file paths to be
++  //!     included in the report. Each time a report is written, the file paths
++  //!     will be read in their entirety and included in the report using the
++  //!     file name key as the name in the http upload.
+   //! \param[in] user_stream_data_sources Data sources to be used to extend
+   //!     crash reports. For each crash report that is written, the data sources
+   //!     are called in turn. These data sources may contribute additional
+@@ -58,6 +63,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+       CrashReportDatabase* database,
+       CrashReportUploadThread* upload_thread,
+       const std::map<std::string, std::string>* process_annotations,
++      const std::map<std::string, base::FilePath>* process_attachments,
+       const UserStreamDataSources* user_stream_data_sources);
+ 
+   ~CrashReportExceptionHandler();
+@@ -81,6 +87,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+   CrashReportDatabase* database_;  // weak
+   CrashReportUploadThread* upload_thread_;  // weak
+   const std::map<std::string, std::string>* process_annotations_;  // weak
++  const std::map<std::string, base::FilePath>* process_attachments_;  // weak
+   const UserStreamDataSources* user_stream_data_sources_;  // weak
+ 
+   DISALLOW_COPY_AND_ASSIGN(CrashReportExceptionHandler);
+diff --git a/handler/mac/crash_report_exception_handler.cc b/handler/mac/crash_report_exception_handler.cc
+index 9919e955..cdceceb6 100644
+--- a/handler/mac/crash_report_exception_handler.cc
++++ b/handler/mac/crash_report_exception_handler.cc
+@@ -45,10 +45,12 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
+     CrashReportDatabase* database,
+     CrashReportUploadThread* upload_thread,
+     const std::map<std::string, std::string>* process_annotations,
++    const std::map<std::string, base::FilePath>* process_attachments,
+     const UserStreamDataSources* user_stream_data_sources)
+     : database_(database),
+       upload_thread_(upload_thread),
+       process_annotations_(process_annotations),
++      process_attachments_(process_attachments),
+       user_stream_data_sources_(user_stream_data_sources) {}
+ 
+ CrashReportExceptionHandler::~CrashReportExceptionHandler() {
+@@ -178,6 +180,24 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
+       return KERN_FAILURE;
+     }
+ 
++    if (process_attachments_) {
++      // Note that attachments are read at this point each time rather than once
++      // so that if the contents of the file has changed it will be re-read for
++      // each upload (e.g. in the case of a log file).
++      for (const auto& it : *process_attachments_) {
++        FileWriter* writer = new_report->AddAttachment(it.first);
++        if (writer) {
++          std::string contents;
++          if (!LoggingReadEntireFile(it.second, &contents)) {
++            // Not being able to read the file isn't considered fatal, and
++            // should not prevent the report from being processed.
++            continue;
++          }
++          writer->Write(contents.data(), contents.size());
++        }
++      }
++    }
++
+     UUID uuid;
+     database_status =
+         database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
+diff --git a/handler/mac/crash_report_exception_handler.h b/handler/mac/crash_report_exception_handler.h
+index 0b44de67..a9a9dc71 100644
+--- a/handler/mac/crash_report_exception_handler.h
++++ b/handler/mac/crash_report_exception_handler.h
+@@ -20,6 +20,7 @@
+ #include <map>
+ #include <string>
+ 
++#include "base/files/file_path.h"
+ #include "base/macros.h"
+ #include "client/crash_report_database.h"
+ #include "handler/crash_report_upload_thread.h"
+@@ -48,6 +49,10 @@ class CrashReportExceptionHandler : public UniversalMachExcServer::Interface {
+   //!     To interoperate with Breakpad servers, the recommended practice is to
+   //!     specify values for the `"prod"` and `"ver"` keys as process
+   //!     annotations.
++  //! \param[in] process_attachments A map of file name keys to file paths to be
++  //!     included in the report. Each time a report is written, the file paths
++  //!     will be read in their entirety and included in the report using the
++  //!     file name key as the name in the http upload.
+   //! \param[in] user_stream_data_sources Data sources to be used to extend
+   //!     crash reports. For each crash report that is written, the data sources
+   //!     are called in turn. These data sources may contribute additional
+@@ -56,6 +61,7 @@ class CrashReportExceptionHandler : public UniversalMachExcServer::Interface {
+       CrashReportDatabase* database,
+       CrashReportUploadThread* upload_thread,
+       const std::map<std::string, std::string>* process_annotations,
++      const std::map<std::string, base::FilePath>* process_attachments,
+       const UserStreamDataSources* user_stream_data_sources);
+ 
+   ~CrashReportExceptionHandler();
+@@ -84,6 +90,7 @@ class CrashReportExceptionHandler : public UniversalMachExcServer::Interface {
+   CrashReportDatabase* database_;  // weak
+   CrashReportUploadThread* upload_thread_;  // weak
+   const std::map<std::string, std::string>* process_annotations_;  // weak
++  const std::map<std::string, base::FilePath>* process_attachments_;  // weak
+   const UserStreamDataSources* user_stream_data_sources_;  // weak
+ 
+   DISALLOW_COPY_AND_ASSIGN(CrashReportExceptionHandler);
+-- 
+2.17.2 (Apple Git-113)
+
+
+From 6b9379be9e9516be749c09ff36b1970d320da7e0 Mon Sep 17 00:00:00 2001
+From: Ihor Dutchak <ihor.youw@gmail.com>
+Date: Sat, 7 Jul 2018 00:37:29 +0300
+Subject: [PATCH 6/9] Add attachments support to Windows crash report database
+
+---
+ client/crash_report_database.cc               |   8 +
+ client/crash_report_database.h                |   2 +
+ client/crash_report_database_generic.cc       |   8 -
+ client/crash_report_database_win.cc           | 147 +++++++++++++++++-
+ handler/win/crash_report_exception_handler.cc |  20 +++
+ handler/win/crash_report_exception_handler.h  |   7 +
+ 6 files changed, 181 insertions(+), 11 deletions(-)
+
+diff --git a/client/crash_report_database.cc b/client/crash_report_database.cc
+index b1d0eaf6..0bbee5f2 100644
+--- a/client/crash_report_database.cc
++++ b/client/crash_report_database.cc
+@@ -19,6 +19,14 @@
+ 
+ namespace crashpad {
+ 
++bool CrashReportDatabase::AttachmentNameIsOK(const std::string& name) {
++  for (const char c : name) {
++    if (c != '_' && c != '-' && c != '.' && !isalnum(c))
++      return false;
++  }
++  return true;
++}
++
+ CrashReportDatabase::Report::Report()
+     : uuid(),
+       file_path(),
+diff --git a/client/crash_report_database.h b/client/crash_report_database.h
+index ebd1dc73..ef181a7c 100644
+--- a/client/crash_report_database.h
++++ b/client/crash_report_database.h
+@@ -395,6 +395,8 @@ class CrashReportDatabase {
+  protected:
+   CrashReportDatabase() {}
+ 
++  static bool AttachmentNameIsOK(const std::string& name);
++
+  private:
+   //! \brief Adjusts a crash report record’s metadata to account for an upload
+   //!     attempt, and updates the last upload attempt time as returned by
+diff --git a/client/crash_report_database_generic.cc b/client/crash_report_database_generic.cc
+index 8e932374..f4c3fbf6 100644
+--- a/client/crash_report_database_generic.cc
++++ b/client/crash_report_database_generic.cc
+@@ -42,14 +42,6 @@ UUID UUIDFromReportPath(const base::FilePath& path) {
+   return uuid;
+ }
+ 
+-bool AttachmentNameIsOK(const std::string& name) {
+-  for (const char c : name) {
+-    if (c != '_' && c != '-' && c != '.' && !isalnum(c))
+-      return false;
+-  }
+-  return true;
+-}
+-
+ using OperationStatus = CrashReportDatabase::OperationStatus;
+ 
+ constexpr base::FilePath::CharType kSettings[] =
+diff --git a/client/crash_report_database_win.cc b/client/crash_report_database_win.cc
+index 89677706..af2c0a82 100644
+--- a/client/crash_report_database_win.cc
++++ b/client/crash_report_database_win.cc
+@@ -29,6 +29,8 @@
+ #include "base/strings/stringprintf.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "client/settings.h"
++#include "util/file/directory_reader.h"
++#include "util/file/filesystem.h"
+ #include "util/misc/implicit_cast.h"
+ #include "util/misc/initialization_state_dcheck.h"
+ #include "util/misc/metrics.h"
+@@ -39,6 +41,7 @@ namespace {
+ 
+ constexpr wchar_t kReportsDirectory[] = L"reports";
+ constexpr wchar_t kMetadataFileName[] = L"metadata";
++constexpr wchar_t kAttachmentsDirectory[] = L"attachments";
+ 
+ constexpr wchar_t kSettings[] = L"settings.dat";
+ 
+@@ -600,6 +603,10 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
+                                    Metrics::CrashSkippedReason reason) override;
+   OperationStatus DeleteReport(const UUID& uuid) override;
+   OperationStatus RequestUpload(const UUID& uuid) override;
++  int CleanDatabase(time_t lockfile_ttl) override;
++
++  // Build a filepath for the directory for the report to hold attachments.
++  base::FilePath AttachmentsPath(const UUID& uuid);
+ 
+  private:
+   // CrashReportDatabase:
+@@ -609,6 +616,16 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
+ 
+   std::unique_ptr<Metadata> AcquireMetadata();
+ 
++  //! \brief Cleans any attachments that have no associated report.
++  void CleanOrphanedAttachments();
++
++  //! \brief Attempt to remove any attachments associated with the given
++  //!     report UUID.
++  //!     There may not be any, so failing is not an error.
++  //!
++  //! \param[in] uuid The report identifier which attachments to remove.
++  void RemoveAttachmentsByUUID(const UUID& uuid);
++
+   base::FilePath base_dir_;
+   Settings settings_;
+   InitializationStateDcheck initialized_;
+@@ -618,12 +635,56 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
+ 
+ FileWriter* CrashReportDatabase::NewReport::AddAttachment(
+     const std::string& name) {
+-  // Attachments aren't implemented in the Windows database yet.
+-  return nullptr;
++  if (!AttachmentNameIsOK(name)) {
++    LOG(ERROR) << "invalid name for attachment " << name;
++    return nullptr;
++  }
++
++  base::FilePath attachments_dir =
++      static_cast<CrashReportDatabaseWin*>(database_)->AttachmentsPath(
++          uuid_);
++  if (!LoggingCreateDirectory(
++          attachments_dir, FilePermissions::kOwnerOnly, true)) {
++    return nullptr;
++  }
++
++  base::FilePath path = attachments_dir.Append(base::UTF8ToUTF16(name));
++
++  auto writer = std::make_unique<FileWriter>();
++  if (!writer->Open(
++          path, FileWriteMode::kCreateOrFail, FilePermissions::kOwnerOnly)) {
++    LOG(ERROR) << "could not open " << base::UTF16ToUTF8(path.value());
++    return nullptr;
++  }
++  attachment_writers_.emplace_back(std::move(writer));
++  attachment_removers_.emplace_back(ScopedRemoveFile(path));
++  return attachment_writers_.back().get();
+ }
+ 
+ void CrashReportDatabase::UploadReport::InitializeAttachments() {
+-  // Attachments aren't implemented in the Windows database yet.
++  base::FilePath attachments_dir =
++      static_cast<CrashReportDatabaseWin*>(database_)->AttachmentsPath(
++          uuid);
++  DirectoryReader reader;
++  if (!reader.Open(attachments_dir)) {
++    return;
++  }
++
++  base::FilePath filename;
++  DirectoryReader::Result dir_result;
++  while ((dir_result = reader.NextFile(&filename)) ==
++         DirectoryReader::Result::kSuccess) {
++    const base::FilePath filepath(attachments_dir.Append(filename));
++    std::unique_ptr<FileReader> reader(std::make_unique<FileReader>());
++    if (!reader->Open(filepath)) {
++      LOG(ERROR) << "attachment " << base::UTF16ToUTF8(filepath.value())
++                 << " couldn't be opened, skipping";
++      continue;
++    }
++    attachment_readers_.emplace_back(std::move(reader));
++    attachment_map_[base::UTF16ToUTF8(filename.value())] =
++      attachment_readers_.back().get();
++  }
+ }
+ 
+ CrashReportDatabaseWin::CrashReportDatabaseWin(const base::FilePath& path)
+@@ -647,6 +708,9 @@ bool CrashReportDatabaseWin::Initialize(bool may_create) {
+   if (!CreateDirectoryIfNecessary(base_dir_.Append(kReportsDirectory)))
+     return false;
+ 
++  if (!CreateDirectoryIfNecessary(base_dir_.Append(kAttachmentsDirectory)))
++    return false;
++
+   if (!settings_.Initialize(base_dir_.Append(kSettings)))
+     return false;
+ 
+@@ -689,6 +753,14 @@ OperationStatus CrashReportDatabaseWin::FinishedWritingCrashReport(
+ 
+   ignore_result(report->file_remover_.release());
+ 
++  // Close all the attachments and disarm their removers too.
++  for (auto& writer : report->attachment_writers_) {
++    writer->Close();
++  }
++  for (auto& remover : report->attachment_removers_) {
++    ignore_result(remover.release());
++  }
++
+   *uuid = report->ReportID();
+ 
+   Metrics::CrashReportPending(Metrics::PendingReportReason::kNewlyCreated);
+@@ -815,6 +887,9 @@ OperationStatus CrashReportDatabaseWin::DeleteReport(const UUID& uuid) {
+                 << base::UTF16ToUTF8(report_path.value());
+     return kFileSystemError;
+   }
++
++  RemoveAttachmentsByUUID(uuid);
++
+   return kNoError;
+ }
+ 
+@@ -843,6 +918,62 @@ std::unique_ptr<Metadata> CrashReportDatabaseWin::AcquireMetadata() {
+   return Metadata::Create(metadata_file, base_dir_.Append(kReportsDirectory));
+ }
+ 
++void CrashReportDatabaseWin::CleanOrphanedAttachments() {
++  base::FilePath root_attachments_dir(base_dir_.Append(kAttachmentsDirectory));
++  DirectoryReader reader;
++  if (!reader.Open(root_attachments_dir)) {
++    LOG(ERROR) << "no attachments dir";
++    return;
++  }
++
++  std::unique_ptr<Metadata> metadata(AcquireMetadata());
++  if (!metadata)
++      return;
++
++  base::FilePath filename;
++  DirectoryReader::Result result;
++  while ((result = reader.NextFile(&filename)) ==
++         DirectoryReader::Result::kSuccess) {
++    const base::FilePath path(root_attachments_dir.Append(filename));
++    if (IsDirectory(path, false)) {
++      UUID uuid;
++      if (!uuid.InitializeFromString(filename.value())) {
++        LOG(ERROR) << "unexpected attachment dir name "
++                   << base::UTF16ToUTF8(filename.value());
++        continue;
++      }
++
++      // Check to see if the report exist.
++      const ReportDisk* report_disk;
++      const OperationStatus os = metadata->FindSingleReport(uuid, &report_disk);
++      if (os != OperationStatus::kReportNotFound) {
++        continue;
++      }
++
++      // Couldn't find a report, assume these attachments are orphaned.
++      RemoveAttachmentsByUUID(uuid);
++    }
++  }
++}
++
++void CrashReportDatabaseWin::RemoveAttachmentsByUUID(const UUID &uuid) {
++  base::FilePath attachments_dir = AttachmentsPath(uuid);
++  DirectoryReader reader;
++  if (!reader.Open(attachments_dir)) {
++    return;
++  }
++
++  base::FilePath filename;
++  DirectoryReader::Result result;
++  while ((result = reader.NextFile(&filename)) ==
++         DirectoryReader::Result::kSuccess) {
++    const base::FilePath filepath(attachments_dir.Append(filename));
++    LoggingRemoveFile(filepath);
++  }
++
++  LoggingRemoveDirectory(attachments_dir);
++}
++
+ std::unique_ptr<CrashReportDatabase> InitializeInternal(
+     const base::FilePath& path,
+     bool may_create) {
+@@ -886,6 +1017,16 @@ OperationStatus CrashReportDatabaseWin::RequestUpload(const UUID& uuid) {
+   return kNoError;
+ }
+ 
++int CrashReportDatabaseWin::CleanDatabase(time_t lockfile_ttl) {
++  (void)lockfile_ttl;
++  CleanOrphanedAttachments();
++  return 0;
++}
++
++base::FilePath CrashReportDatabaseWin::AttachmentsPath(const UUID& uuid) {
++  return base_dir_.Append(kAttachmentsDirectory).Append(uuid.ToString16());
++}
++
+ // static
+ std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
+     const base::FilePath& path) {
+diff --git a/handler/win/crash_report_exception_handler.cc b/handler/win/crash_report_exception_handler.cc
+index d845c446..e735cdc9 100644
+--- a/handler/win/crash_report_exception_handler.cc
++++ b/handler/win/crash_report_exception_handler.cc
+@@ -35,10 +35,12 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
+     CrashReportDatabase* database,
+     CrashReportUploadThread* upload_thread,
+     const std::map<std::string, std::string>* process_annotations,
++    const std::map<std::string, base::FilePath>* process_attachments,
+     const UserStreamDataSources* user_stream_data_sources)
+     : database_(database),
+       upload_thread_(upload_thread),
+       process_annotations_(process_annotations),
++      process_attachments_(process_attachments),
+       user_stream_data_sources_(user_stream_data_sources) {}
+ 
+ CrashReportExceptionHandler::~CrashReportExceptionHandler() {
+@@ -114,6 +116,24 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
+       return termination_code;
+     }
+ 
++    if (process_attachments_) {
++      // Note that attachments are read at this point each time rather than once
++      // so that if the contents of the file has changed it will be re-read for
++      // each upload (e.g. in the case of a log file).
++      for (const auto& it : *process_attachments_) {
++        FileWriter* writer = new_report->AddAttachment(it.first);
++        if (writer) {
++          std::string contents;
++          if (!LoggingReadEntireFile(it.second, &contents)) {
++            // Not being able to read the file isn't considered fatal, and
++            // should not prevent the report from being processed.
++            continue;
++          }
++          writer->Write(contents.data(), contents.size());
++        }
++      }
++    }
++
+     UUID uuid;
+     database_status =
+         database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
+diff --git a/handler/win/crash_report_exception_handler.h b/handler/win/crash_report_exception_handler.h
+index c2781de3..2439813b 100644
+--- a/handler/win/crash_report_exception_handler.h
++++ b/handler/win/crash_report_exception_handler.h
+@@ -20,6 +20,7 @@
+ #include <map>
+ #include <string>
+ 
++#include "base/files/file_path.h"
+ #include "base/macros.h"
+ #include "handler/user_stream_data_source.h"
+ #include "util/win/exception_handler_server.h"
+@@ -49,6 +50,10 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+   //!     To interoperate with Breakpad servers, the recommended practice is to
+   //!     specify values for the `"prod"` and `"ver"` keys as process
+   //!     annotations.
++  //! \param[in] process_attachments A map of file name keys to file paths to be
++  //!     included in the report. Each time a report is written, the file paths
++  //!     will be read in their entirety and included in the report using the
++  //!     file name key as the name in the http upload.
+   //! \param[in] user_stream_data_sources Data sources to be used to extend
+   //!     crash reports. For each crash report that is written, the data sources
+   //!     are called in turn. These data sources may contribute additional
+@@ -57,6 +62,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+       CrashReportDatabase* database,
+       CrashReportUploadThread* upload_thread,
+       const std::map<std::string, std::string>* process_annotations,
++      const std::map<std::string, base::FilePath>* process_attachments,
+       const UserStreamDataSources* user_stream_data_sources);
+ 
+   ~CrashReportExceptionHandler();
+@@ -75,6 +81,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
+   CrashReportDatabase* database_;  // weak
+   CrashReportUploadThread* upload_thread_;  // weak
+   const std::map<std::string, std::string>* process_annotations_;  // weak
++  const std::map<std::string, base::FilePath>* process_attachments_; // weak
+   const UserStreamDataSources* user_stream_data_sources_;  // weak
+ 
+   DISALLOW_COPY_AND_ASSIGN(CrashReportExceptionHandler);
+-- 
+2.17.2 (Apple Git-113)
+
+
+From 6762fa2a83e8d87fefec244d206d89c101c9dd0d Mon Sep 17 00:00:00 2001
+From: Ihor Dutchak <ihor.youw@gmail.com>
+Date: Tue, 27 Nov 2018 04:34:32 +0200
+Subject: [PATCH 7/9] update CrashReportDatabaseTest
+
+---
+ client/crash_report_database_test.cc | 28 ++++++++++++----------------
+ 1 file changed, 12 insertions(+), 16 deletions(-)
+
+diff --git a/client/crash_report_database_test.cc b/client/crash_report_database_test.cc
+index 2dbb4fc1..aed16ebd 100644
+--- a/client/crash_report_database_test.cc
++++ b/client/crash_report_database_test.cc
+@@ -20,7 +20,6 @@
+ #include "test/errors.h"
+ #include "test/file.h"
+ #include "test/filesystem.h"
+-#include "test/gtest_disabled.h"
+ #include "test/scoped_temp_dir.h"
+ #include "util/file/file_io.h"
+ #include "util/file/filesystem.h"
+@@ -671,10 +670,6 @@ TEST_F(CrashReportDatabaseTest, RequestUpload) {
+ }
+ 
+ TEST_F(CrashReportDatabaseTest, Attachments) {
+-#if defined(OS_MACOSX) || defined(OS_WIN)
+-  // Attachments aren't supported on Mac and Windows yet.
+-  DISABLED_TEST();
+-#else
+   std::unique_ptr<CrashReportDatabase::NewReport> new_report;
+   ASSERT_EQ(db()->PrepareNewCrashReport(&new_report),
+             CrashReportDatabase::kNoError);
+@@ -713,16 +708,9 @@ TEST_F(CrashReportDatabaseTest, Attachments) {
+   char result_buffer[sizeof(test_data)];
+   result_attachments["some_file"]->Read(result_buffer, sizeof(result_buffer));
+   EXPECT_EQ(memcmp(test_data, result_buffer, sizeof(test_data)), 0);
+-#endif
+ }
+ 
+ TEST_F(CrashReportDatabaseTest, OrphanedAttachments) {
+-#if defined(OS_MACOSX) || defined(OS_WIN)
+-  // Attachments aren't supported on Mac and Windows yet.
+-  DISABLED_TEST();
+-#else
+-  // TODO: This is using paths that are specific to the generic implementation
+-  // and will need to be generalized for Mac and Windows.
+   std::unique_ptr<CrashReportDatabase::NewReport> new_report;
+   ASSERT_EQ(db()->PrepareNewCrashReport(&new_report),
+             CrashReportDatabase::kNoError);
+@@ -744,16 +732,25 @@ TEST_F(CrashReportDatabaseTest, OrphanedAttachments) {
+ 
+   ASSERT_TRUE(LoggingRemoveFile(report.file_path));
+ 
++// Additional check for Generic database
++#if !defined(OS_MACOSX) && !defined(OS_WIN)
+   ASSERT_TRUE(LoggingRemoveFile(base::FilePath(
+       report.file_path.RemoveFinalExtension().value() + ".meta")));
++#endif
+ 
+   ASSERT_EQ(db()->LookUpCrashReport(uuid, &report),
+             CrashReportDatabase::kReportNotFound);
+ 
++#ifdef OS_WIN
++  auto uuid_str = uuid.ToString16();
++#else
++  auto uuid_str = uuid.ToString();
++#endif
++
+   base::FilePath report_attachments_dir(
+-      path().Append("attachments").Append(uuid.ToString()));
+-  base::FilePath file_path1(report_attachments_dir.Append("file1"));
+-  base::FilePath file_path2(report_attachments_dir.Append("file2"));
++      path().Append(FILE_PATH_LITERAL("attachments")).Append(uuid_str));
++  base::FilePath file_path1(report_attachments_dir.Append(FILE_PATH_LITERAL("file1")));
++  base::FilePath file_path2(report_attachments_dir.Append(FILE_PATH_LITERAL("file2")));
+   EXPECT_TRUE(FileExists(file_path1));
+   EXPECT_TRUE(FileExists(file_path1));
+ 
+@@ -762,7 +759,6 @@ TEST_F(CrashReportDatabaseTest, OrphanedAttachments) {
+   EXPECT_FALSE(FileExists(file_path1));
+   EXPECT_FALSE(FileExists(file_path2));
+   EXPECT_FALSE(FileExists(report_attachments_dir));
+-#endif
+ }
+ 
+ // This test uses knowledge of the database format to break it, so it only
+-- 
+2.17.2 (Apple Git-113)
+
+
+From 895966055861ba96469a95b5055ddc30672de6be Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 19:54:37 +0100
+Subject: [PATCH 8/9] feat: Add StartHandlerWithAttachments
+
+---
+ client/crashpad_client.h      |  6 +++---
+ client/crashpad_client_mac.cc | 26 ++++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/client/crashpad_client.h b/client/crashpad_client.h
+index 3275d58d..7d91b595 100644
+--- a/client/crashpad_client.h
++++ b/client/crashpad_client.h
+@@ -112,18 +112,18 @@ class CrashpadClient {
+                     bool restartable,
+                     bool asynchronous_start);
+ 
+-#if defined(OS_MACOSX)
++#if defined(OS_WIN) || defined(OS_MACOSX)
+   bool StartHandlerWithAttachments(
+       const base::FilePath& handler,
+       const base::FilePath& database,
+       const base::FilePath& metrics_dir,
+       const std::string& url,
+       const std::map<std::string, std::string>& annotations,
+-      const std::map<std::string, std::string>& fileAttachments,
++      const std::map<std::string, base::FilePath>& fileAttachments,
+       const std::vector<std::string>& arguments,
+       bool restartable,
+       bool asynchronous_start);
+-#endif
++#endif // OS_WIN || OS_MACOSX
+ 
+ #if defined(OS_ANDROID) || DOXYGEN
+   //! \brief Installs a signal handler to execute `/system/bin/app_process` and
+diff --git a/client/crashpad_client_mac.cc b/client/crashpad_client_mac.cc
+index 22bd538c..164cbe30 100644
+--- a/client/crashpad_client_mac.cc
++++ b/client/crashpad_client_mac.cc
+@@ -465,6 +465,32 @@ bool CrashpadClient::StartHandler(
+   return true;
+ }
+ 
++bool CrashpadClient::StartHandlerWithAttachments(
++    const base::FilePath& handler,
++    const base::FilePath& database,
++    const base::FilePath& metrics_dir,
++    const std::string& url,
++    const std::map<std::string, std::string>& annotations,
++    const std::map<std::string, base::FilePath>& fileAttachments,
++    const std::vector<std::string>& arguments,
++    bool restartable,
++    bool asynchronous_start) {
++  std::vector<std::string> updated_arguments = arguments;
++  for (const auto& kv: fileAttachments) {
++    std::string attachmentArg = "--attachment=" + kv.first + "=" + kv.second.value();
++    updated_arguments.push_back(attachmentArg);
++  }
++
++  return StartHandler(handler,
++                  database,
++                  metrics_dir,
++                  url,
++                  annotations,
++                  updated_arguments,
++                  restartable,
++                  asynchronous_start);
++}
++
+ bool CrashpadClient::SetHandlerMachService(const std::string& service_name) {
+   base::mac::ScopedMachSendRight exception_port(BootstrapLookUp(service_name));
+   if (!exception_port.is_valid()) {
+-- 
+2.17.2 (Apple Git-113)
+
+
+From 4316393a7507c879e79949cd779c55db6297bd35 Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Mon, 4 Mar 2019 19:56:29 +0100
+Subject: [PATCH 9/9] feat: Add example
+
+---
+ example.cpp | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 example.cpp
+
+diff --git a/example.cpp b/example.cpp
+new file mode 100644
+index 00000000..474ae999
+--- /dev/null
++++ b/example.cpp
+@@ -0,0 +1,81 @@
++#include <stdio.h>
++#include <atomic>
++#include <chrono>
++#include <iostream>
++#include <map>
++#include <string>
++#include <thread>
++#include <vector>
++
++#include "client/crash_report_database.h"
++#include "client/crashpad_client.h"
++#include "client/crashpad_info.h"
++#include "client/settings.h"
++
++using namespace crashpad;
++
++int init_crashpad() {
++  // Cache directory that will store crashpad information and minidumps
++  base::FilePath database("crashpad.db");
++  // Path to the out-of-process handler executable
++  base::FilePath handler("./out/Default/crashpad_handler");
++  // URL used to submit minidumps to
++  std::string url(
++      "http://localhost:8000/api/5/minidump/"
++      "?sentry_key=36811373240a4fc6b25f3040693462d5");
++  // Optional annotations passed via --annotations to the handler
++  std::map<std::string, std::string> annotations;
++  // Optional arguments to pass to the handler
++  std::vector<std::string> arguments;
++
++  arguments.push_back("--no-rate-limit");
++
++  std::map<std::string, base::FilePath> attachments;
++  attachments["attch_log_bla.txt"] = base::FilePath("/tmp/log.txt");
++
++  CrashpadClient client;
++  bool success = client.StartHandlerWithAttachments(handler,
++                                     database,
++                                     database,
++                                     url,
++                                     annotations,
++                                     attachments,
++                                     arguments,
++                                     /* restartable */ true,
++                                     /* asynchronous_start */ false);
++
++  if (success) {
++    printf("Started client handler.\n");
++  } else {
++    printf("Failed to start client handler.\n");
++  }
++
++  if (!success) {
++    return 1;
++  }
++
++  std::unique_ptr<CrashReportDatabase> db =
++      CrashReportDatabase::Initialize(database);
++
++  if (db != nullptr && db->GetSettings() != nullptr) {
++    db->GetSettings()->SetUploadsEnabled(true);
++  }
++
++  // Ensure that the simple annotations dictionary is set in the client.
++  CrashpadInfo* crashpad_info = CrashpadInfo::GetCrashpadInfo();
++
++  return 0;
++}
++
++void crash(uint sleep_sec) {
++  std::cerr << "Prepare to crash, sleeping for " << sleep_sec << " second(s)\n";
++  std::this_thread::sleep_for(std::chrono::seconds(sleep_sec));
++  memset((char*)0x0, 1, 100);
++}
++
++int main(int args, char* argv[]) {
++  init_crashpad();
++
++  const uint sleep_sec = args > 1 ? std::stoi(argv[1]) : 1;
++  crash(sleep_sec);
++}
+-- 
+2.17.2 (Apple Git-113)
+

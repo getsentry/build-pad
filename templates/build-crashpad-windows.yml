@@ -9,9 +9,7 @@ jobs:
     steps:
       - template: prescript-common.yml
       - bash: |
-          cd crashpad/
-          bash ./build-shell.sh
-          bash ./collect-files-windows.sh
+          make build-windows-all -C crashpad
         env:
           BUILD_ARCH: "${{ parameters.arch }}"
       - template: zeus-upload.yml
