@@ -18,9 +18,11 @@ fi
 
 . $SCRIPT_DIR/vars.sh
 
-# Set git data to avoid errors
-git config --global user.email "azure.pipelines@sentry.io"
-git config --global user.name "Azure Pipelines"
+if [[ "${TF_BUILD:-}" == "True" ]]; then
+  # Set git data to avoid errors
+  git config --global user.email "azure.pipelines@sentry.io"
+  git config --global user.name "Azure Pipelines"
+fi
 
 # Checkout and sync crashpad
 if [ -d crashpad ]; then
