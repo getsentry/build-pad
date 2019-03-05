@@ -7,9 +7,7 @@ jobs:
     steps:
       - template: prescript-common.yml
       - bash: |
-          cd crashpad/
-          bash build-shell.sh
-          bash collect-files.sh
+          make build-mac-all -C crashpad
       - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
@@ -25,10 +23,7 @@ jobs:
     steps:
       - template: prescript-common.yml
       - bash: |
-          cd crashpad/
-          bash build-docker.sh
-          sudo chown -R $USER ./build
-          bash collect-files.sh
+          make build-linux-all -C crashpad
       - template: zeus-upload.yml
         parameters:
           path: ./crashpad/dist/out
