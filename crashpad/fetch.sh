@@ -18,6 +18,10 @@ fi
 
 . $SCRIPT_DIR/vars.sh
 
+# Set git data to avoid errors
+git config --global user.email "azure.pipelines@sentry.io"
+git config --global user.name "Azure Pipelines"
+
 # Checkout and sync crashpad
 if [ -d crashpad ]; then
   cd crashpad
