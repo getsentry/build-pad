@@ -37,6 +37,6 @@ build-linux-all: clean-all fetch-crashpad build-docker
 	sudo chown -R $(USER) ./build
 	$(MAKE) collect
 .PHONY: build-linux-all
-	
-build-mac-all: clean-all fetch-crashpad build collect
+
+build-mac-all: clean-all fetch-crashpad build-shell collect
 .PHONY: build-mac-all
