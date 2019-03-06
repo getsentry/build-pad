@@ -1,7 +1,7 @@
 From c8cdb1a4ddd9b48dd76280f9742b4efc4ec840ec Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 13:13:06 +0100
-Subject: [PATCH 01/10] Add Makefile with helpers
+Subject: [PATCH 01/11] Add Makefile with helpers
 
 ---
  Makefile | 13 +++++++++++++
@@ -34,7 +34,7 @@ index 00000000..08524f9c
 From e9ab047cf48ae745e8e817b2c6d41141ed7a7f01 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 16:24:59 +0100
-Subject: [PATCH 02/10] Update Makefile
+Subject: [PATCH 02/11] Update Makefile
 
 ---
  Makefile | 12 ++++++++++++
@@ -67,7 +67,7 @@ index 08524f9c..b741664b 100644
 From d833d958a662be4394a34a4105d37bb174265f09 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 16:31:35 +0100
-Subject: [PATCH 03/10] feat: Add attachments support to crashpad handler
+Subject: [PATCH 03/11] feat: Add attachments support to crashpad handler
 
 ---
  README.md               |  6 ++++++
@@ -195,7 +195,7 @@ index 31686b3e..6d7850b9 100644
 From c71a19f67ab3be1963966d8a02fa053f42f64ced Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 18:35:38 +0100
-Subject: [PATCH 04/10] feat: Add client handler function with attachments
+Subject: [PATCH 04/11] feat: Add client handler function with attachments
 
 ---
  client/crashpad_client.h | 13 +++++++++++++
@@ -232,7 +232,7 @@ index 8bf43acd..3275d58d 100644
 From e02bf1f0e2dc0c2aaa89f135fa3a91866093ac37 Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Tue, 27 Nov 2018 01:31:49 +0200
-Subject: [PATCH 05/10] Add attachments support to macOS crash report database
+Subject: [PATCH 05/11] Add attachments support to macOS crash report database
 
 ---
  client/crash_report_database.cc               |   2 +-
@@ -705,7 +705,7 @@ index 0b44de67..a9a9dc71 100644
 From 6b9379be9e9516be749c09ff36b1970d320da7e0 Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Sat, 7 Jul 2018 00:37:29 +0300
-Subject: [PATCH 06/10] Add attachments support to Windows crash report
+Subject: [PATCH 06/11] Add attachments support to Windows crash report
  database
 
 ---
@@ -1080,7 +1080,7 @@ index c2781de3..2439813b 100644
 From 6762fa2a83e8d87fefec244d206d89c101c9dd0d Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Tue, 27 Nov 2018 04:34:32 +0200
-Subject: [PATCH 07/10] update CrashReportDatabaseTest
+Subject: [PATCH 07/11] update CrashReportDatabaseTest
 
 ---
  client/crash_report_database_test.cc | 28 ++++++++++++----------------
@@ -1170,7 +1170,7 @@ index 2dbb4fc1..aed16ebd 100644
 From 895966055861ba96469a95b5055ddc30672de6be Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 19:54:37 +0100
-Subject: [PATCH 08/10] feat: Add StartHandlerWithAttachments
+Subject: [PATCH 08/11] feat: Add StartHandlerWithAttachments
 
 ---
  client/crashpad_client.h      |  6 +++---
@@ -1247,7 +1247,7 @@ index 22bd538c..164cbe30 100644
 From 2ce7bd3f518385c4483323d98d3f9da7903a8ec1 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 19:56:29 +0100
-Subject: [PATCH 09/10] feat: Add example
+Subject: [PATCH 09/11] feat: Add example
 
 ---
  README.md   |  4 +++
@@ -1361,7 +1361,7 @@ index 00000000..474ae999
 From a75c2664c5053c681364b0071f3006f2de50711f Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Tue, 5 Mar 2019 18:30:04 +0100
-Subject: [PATCH 10/10] Fix Windows warning
+Subject: [PATCH 10/11] Fix Windows warning
 
 ---
  client/crash_report_database_win.cc | 6 +++---
@@ -1402,6 +1402,89 @@ index b223c909..7a4c6d8b 100644
        &options.attachments,
  #endif
        user_stream_sources);
+-- 
+2.17.2 (Apple Git-113)
+
+
+From 4afbc6285a7d87ba0a5748fa33d59a5853b53853 Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Wed, 6 Mar 2019 13:11:36 +0100
+Subject: [PATCH 11/11] Fixes for Linux
+
+---
+ Makefile                |  4 ++++
+ handler/handler_main.cc | 16 ++++++++--------
+ 2 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index b741664b..80a41c2b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -23,3 +23,7 @@ example:
+ 		-framework Foundation -framework Security -framework CoreText \
+ 		-framework CoreGraphics -framework IOKit -lbsm
+ .PHONY: example
++
++gen-sentry-patch:
++	git format-patch --stdout master...HEAD > getsentry.patch
++.PHONY: get-sentry-patch
+diff --git a/handler/handler_main.cc b/handler/handler_main.cc
+index 7a4c6d8b..dd8fc9da 100644
+--- a/handler/handler_main.cc
++++ b/handler/handler_main.cc
+@@ -149,9 +149,9 @@ void Usage(const base::FilePath& me) {
+ #endif  // OS_LINUX || OS_ANDROID
+ "      --url=URL               send crash reports to this Breakpad server URL,\n"
+ "                              only if uploads are enabled for the database\n"
+-#if defined(OS_WIN) || defined(OS_MACOSX)
++#if !defined(OS_FUCHSIA)
+ "      --attachment=NAME=PATH  attach a copy of a file, along with a crash dump\n"
+-#endif // OS_WIN || OS_MACOSX
++#endif
+ "      --help                  display this help and exit\n"
+ "      --version               output version information and exit\n",
+           me.value().c_str());
+@@ -581,9 +581,9 @@ int HandlerMain(int argc,
+     kOptionSanitizationInformation,
+ #endif
+     kOptionURL,
+-#if defined(OS_WIN) || defined(OS_MACOSX)
++#if !defined(OS_FUCHSIA)
+     kOptionAttachment,
+-#endif // OS_WIN || OS_MACOSX
++#endif
+ 
+     // Standard options.
+     kOptionHelp = -2,
+@@ -643,9 +643,9 @@ int HandlerMain(int argc,
+      kOptionSanitizationInformation},
+ #endif  // OS_LINUX || OS_ANDROID
+     {"url", required_argument, nullptr, kOptionURL},
+-#if defined(OS_WIN) || defined(OS_MACOSX)
++#if !defined(OS_FUCHSIA)
+     {"attachment", required_argument, nullptr, kOptionAttachment},
+-#endif // OS_WIN || O_MACOSX
++#endif
+     {"help", no_argument, nullptr, kOptionHelp},
+     {"version", no_argument, nullptr, kOptionVersion},
+     {nullptr, 0, nullptr, 0},
+@@ -783,14 +783,14 @@ int HandlerMain(int argc,
+         options.url = optarg;
+         break;
+       }
+-#if defined(OS_WIN) || defined(OS_MACOSX)
++#if !defined(OS_FUCHSIA)
+       case kOptionAttachment: {
+         if (!AddKeyValueToMap(&options.attachments, optarg, "--attachment")) {
+           return ExitFailure();
+         }
+         break;
+       }
+-#endif // OS_WIN || OS_MACOSX
++#endif
+       case kOptionHelp: {
+         Usage(me);
+         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
 -- 
 2.17.2 (Apple Git-113)
 
