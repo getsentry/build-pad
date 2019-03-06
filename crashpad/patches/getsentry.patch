@@ -1358,14 +1358,15 @@ index 00000000..474ae999
 2.17.2 (Apple Git-113)
 
 
-From 78a718d4289402a84fb23295d5407e0677450d4e Mon Sep 17 00:00:00 2001
+From a75c2664c5053c681364b0071f3006f2de50711f Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Tue, 5 Mar 2019 18:30:04 +0100
 Subject: [PATCH 10/10] Fix Windows warning
 
 ---
  client/crash_report_database_win.cc | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ handler/handler_main.cc             | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/client/crash_report_database_win.cc b/client/crash_report_database_win.cc
 index af2c0a82..a78b7cee 100644
@@ -1388,6 +1389,19 @@ index af2c0a82..a78b7cee 100644
      attachment_map_[base::UTF16ToUTF8(filename.value())] =
        attachment_readers_.back().get();
    }
+diff --git a/handler/handler_main.cc b/handler/handler_main.cc
+index b223c909..7a4c6d8b 100644
+--- a/handler/handler_main.cc
++++ b/handler/handler_main.cc
+@@ -917,7 +917,7 @@ int HandlerMain(int argc,
+ #if defined(OS_FUCHSIA)
+       // TODO(scottmg): Process level file attachments, and for all platforms.
+       nullptr,
+-#elif defined(OS_WIN) || defined(OS_MACOSX)
++#else
+       &options.attachments,
+ #endif
+       user_stream_sources);
 -- 
 2.17.2 (Apple Git-113)
 
