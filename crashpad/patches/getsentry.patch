@@ -1,7 +1,7 @@
 From c8cdb1a4ddd9b48dd76280f9742b4efc4ec840ec Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 13:13:06 +0100
-Subject: [PATCH 01/11] Add Makefile with helpers
+Subject: [PATCH 01/12] Add Makefile with helpers
 
 ---
  Makefile | 13 +++++++++++++
@@ -34,7 +34,7 @@ index 00000000..08524f9c
 From e9ab047cf48ae745e8e817b2c6d41141ed7a7f01 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 16:24:59 +0100
-Subject: [PATCH 02/11] Update Makefile
+Subject: [PATCH 02/12] Update Makefile
 
 ---
  Makefile | 12 ++++++++++++
@@ -67,7 +67,7 @@ index 08524f9c..b741664b 100644
 From d833d958a662be4394a34a4105d37bb174265f09 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 16:31:35 +0100
-Subject: [PATCH 03/11] feat: Add attachments support to crashpad handler
+Subject: [PATCH 03/12] feat: Add attachments support to crashpad handler
 
 ---
  README.md               |  6 ++++++
@@ -195,7 +195,7 @@ index 31686b3e..6d7850b9 100644
 From c71a19f67ab3be1963966d8a02fa053f42f64ced Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 18:35:38 +0100
-Subject: [PATCH 04/11] feat: Add client handler function with attachments
+Subject: [PATCH 04/12] feat: Add client handler function with attachments
 
 ---
  client/crashpad_client.h | 13 +++++++++++++
@@ -232,7 +232,7 @@ index 8bf43acd..3275d58d 100644
 From e02bf1f0e2dc0c2aaa89f135fa3a91866093ac37 Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Tue, 27 Nov 2018 01:31:49 +0200
-Subject: [PATCH 05/11] Add attachments support to macOS crash report database
+Subject: [PATCH 05/12] Add attachments support to macOS crash report database
 
 ---
  client/crash_report_database.cc               |   2 +-
@@ -705,7 +705,7 @@ index 0b44de67..a9a9dc71 100644
 From 6b9379be9e9516be749c09ff36b1970d320da7e0 Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Sat, 7 Jul 2018 00:37:29 +0300
-Subject: [PATCH 06/11] Add attachments support to Windows crash report
+Subject: [PATCH 06/12] Add attachments support to Windows crash report
  database
 
 ---
@@ -1080,7 +1080,7 @@ index c2781de3..2439813b 100644
 From 6762fa2a83e8d87fefec244d206d89c101c9dd0d Mon Sep 17 00:00:00 2001
 From: Ihor Dutchak <ihor.youw@gmail.com>
 Date: Tue, 27 Nov 2018 04:34:32 +0200
-Subject: [PATCH 07/11] update CrashReportDatabaseTest
+Subject: [PATCH 07/12] update CrashReportDatabaseTest
 
 ---
  client/crash_report_database_test.cc | 28 ++++++++++++----------------
@@ -1170,7 +1170,7 @@ index 2dbb4fc1..aed16ebd 100644
 From 895966055861ba96469a95b5055ddc30672de6be Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 19:54:37 +0100
-Subject: [PATCH 08/11] feat: Add StartHandlerWithAttachments
+Subject: [PATCH 08/12] feat: Add StartHandlerWithAttachments
 
 ---
  client/crashpad_client.h      |  6 +++---
@@ -1247,7 +1247,7 @@ index 22bd538c..164cbe30 100644
 From 2ce7bd3f518385c4483323d98d3f9da7903a8ec1 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Mon, 4 Mar 2019 19:56:29 +0100
-Subject: [PATCH 09/11] feat: Add example
+Subject: [PATCH 09/12] feat: Add example
 
 ---
  README.md   |  4 +++
@@ -1361,7 +1361,7 @@ index 00000000..474ae999
 From a75c2664c5053c681364b0071f3006f2de50711f Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Tue, 5 Mar 2019 18:30:04 +0100
-Subject: [PATCH 10/11] Fix Windows warning
+Subject: [PATCH 10/12] Fix Windows warning
 
 ---
  client/crash_report_database_win.cc | 6 +++---
@@ -1409,7 +1409,7 @@ index b223c909..7a4c6d8b 100644
 From 4afbc6285a7d87ba0a5748fa33d59a5853b53853 Mon Sep 17 00:00:00 2001
 From: Anton Ovchinnikov <anton@tonyo.info>
 Date: Wed, 6 Mar 2019 13:11:36 +0100
-Subject: [PATCH 11/11] Fixes for Linux
+Subject: [PATCH 11/12] Fixes for Linux
 
 ---
  Makefile                |  4 ++++
@@ -1485,6 +1485,57 @@ index 7a4c6d8b..dd8fc9da 100644
        case kOptionHelp: {
          Usage(me);
          MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
+-- 
+2.17.2 (Apple Git-113)
+
+
+From b729d29cb1ec1720d3da308dd9ae363244d701ec Mon Sep 17 00:00:00 2001
+From: Anton Ovchinnikov <anton@tonyo.info>
+Date: Wed, 6 Mar 2019 18:02:33 +0100
+Subject: [PATCH 12/12] Add attachment handler for Windows
+
+---
+ client/crashpad_client_win.cc | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/client/crashpad_client_win.cc b/client/crashpad_client_win.cc
+index 143dc4f1..106954db 100644
+--- a/client/crashpad_client_win.cc
++++ b/client/crashpad_client_win.cc
+@@ -651,6 +651,33 @@ bool CrashpadClient::StartHandler(
+   }
+ }
+ 
++bool CrashpadClient::StartHandlerWithAttachments(
++    const base::FilePath& handler,
++    const base::FilePath& database,
++    const base::FilePath& metrics_dir,
++    const std::string& url,
++    const std::map<std::string, std::string>& annotations,
++    const std::map<std::string, base::FilePath>& fileAttachments,
++    const std::vector<std::string>& arguments,
++    bool restartable,
++    bool asynchronous_start) {
++  std::vector<std::string> updated_arguments = arguments;
++  for (const auto& kv : fileAttachments) {
++    std::string attachmentArg =
++        "--attachment=" + kv.first + "=" + base::UTF16ToUTF8(kv.second.value());
++    updated_arguments.push_back(attachmentArg);
++  }
++
++  return StartHandler(handler,
++                      database,
++                      metrics_dir,
++                      url,
++                      annotations,
++                      updated_arguments,
++                      restartable,
++                      asynchronous_start);
++}
++
+ bool CrashpadClient::SetHandlerIPCPipe(const std::wstring& ipc_pipe) {
+   DCHECK(ipc_pipe_.empty());
+   DCHECK(!ipc_pipe.empty());
 -- 
 2.17.2 (Apple Git-113)
 
