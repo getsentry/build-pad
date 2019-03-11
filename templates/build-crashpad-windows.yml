@@ -10,6 +10,9 @@ jobs:
       - template: prescript-common.yml
       - bash: |
           make build-windows-all -C crashpad
+          grep -ir '/MT' .
+          grep -ir '/MD' .
+          grep -ir 'multithread' .
         env:
           BUILD_ARCH: "${{ parameters.arch }}"
       - template: zeus-upload.yml
