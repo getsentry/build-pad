@@ -4,4 +4,3 @@ github:
   repo: crashpad-build
 targets:
   - name: github
-    includeNames: /^crashpad-.*zip$/

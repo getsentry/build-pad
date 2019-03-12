@@ -7,5 +7,5 @@ trigger:
 pr: none
 
 jobs:
-  - template: templates/build-breakpad.yml
+  # - template: templates/build-breakpad.yml
   - template: templates/build-crashpad.yml

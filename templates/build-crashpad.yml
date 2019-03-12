@@ -1,35 +1,35 @@
 jobs:
-  # Mac
-  - job: crashpad_macos
-    displayName: Crashpad (MacOS, x86_64)
-    pool:
-      vmImage: "macos-10.13"
-    steps:
-      - template: prescript-common.yml
-      - bash: |
-          make build-mac-all -C crashpad
-      - template: zeus-upload.yml
-        parameters:
-          path: ./crashpad/dist/out
-          pattern: "*.zip"
-          uploadName: "crashpad-Darwin-x86_64.zip"
-      - template: zeus-report.yml
+  # # Mac
+  # - job: crashpad_macos
+  #   displayName: Crashpad (MacOS, x86_64)
+  #   pool:
+  #     vmImage: "macos-10.13"
+  #   steps:
+  #     - template: prescript-common.yml
+  #     - bash: |
+  #         make build-mac-all -C crashpad
+  #     - template: zeus-upload.yml
+  #       parameters:
+  #         path: ./crashpad/dist/out
+  #         pattern: "*.zip"
+  #         uploadName: "crashpad-Darwin-x86_64.zip"
+  #     - template: zeus-report.yml
 
-  # Linux
-  - job: crashpad_linux
-    displayName: Crashpad (Linux, x86_64)
-    pool:
-      vmImage: "ubuntu-16.04"
-    steps:
-      - template: prescript-common.yml
-      - bash: |
-          make build-linux-all -C crashpad
-      - template: zeus-upload.yml
-        parameters:
-          path: ./crashpad/dist/out
-          pattern: "*.zip"
-          uploadName: "crashpad-Linux-x86_64.zip"
-      - template: zeus-report.yml
+  # # Linux
+  # - job: crashpad_linux
+  #   displayName: Crashpad (Linux, x86_64)
+  #   pool:
+  #     vmImage: "ubuntu-16.04"
+  #   steps:
+  #     - template: prescript-common.yml
+  #     - bash: |
+  #         make build-linux-all -C crashpad
+  #     - template: zeus-upload.yml
+  #       parameters:
+  #         path: ./crashpad/dist/out
+  #         pattern: "*.zip"
+  #         uploadName: "crashpad-Linux-x86_64.zip"
+  #     - template: zeus-report.yml
 
   # Windows
   - template: build-crashpad-windows.yml
