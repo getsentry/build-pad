@@ -30,7 +30,13 @@ workspace "Breakpad"
       "HAVE_A_OUT_H",
       "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR",
     }
-
+  filter "system:windows"
+    platforms {"Win32", "Win64"}
+    includedirs {"$(VSInstallDir)/DIA SDK/include"}
+  filter {"system:windows", "platforms:Win32"}
+    architecture "x86"
+  filter {"system:windows", "platforms:Win64"}
+    architecture "x64"
   filter {}
 
 project "dump_syms"
@@ -71,6 +77,20 @@ project "dump_syms"
       SRC_ROOT.."/src/common/linux/safe_readlink.cc",
       SRC_ROOT.."/src/tools/linux/dump_syms/dump_syms.cc",
     }
+  filter "system:windows"
+    links {"imagehlp.lib", "diaguids.lib"}
+    files {
+      SRC_ROOT.."/src/common/windows/dia_util.cc",
+      SRC_ROOT.."/src/common/windows/guid_string.cc",
+      SRC_ROOT.."/src/common/windows/omap.cc",
+      SRC_ROOT.."/src/common/windows/pdb_source_line_writer.cc",
+      SRC_ROOT.."/src/common/windows/string_utils.cc",
+      SRC_ROOT.."/src/tools/windows/dump_syms/dump_syms.cc",
+    }
+  filter {"system:windows", "platforms:Win32"}
+    libdirs {"$(VSInstallDir)/DIA SDK/lib"}
+  filter {"system:windows", "platforms:Win64"}
+    libdirs {"$(VSInstallDir)/DIA SDK/lib/amd64"}
 
   filter {}
 
@@ -99,6 +119,11 @@ project "minidump_dump"
     SRC_ROOT.."/src/**/*_unittest.cc",
     SRC_ROOT.."/src/**/*_test.cc",
   }
+
+  filter "system:windows"
+    -- This project cannot be currently compiled on Windows
+    removefiles {SRC_ROOT.."/src/**"}
+    premake.warn "'minidump_dump' project cannot be compiled on Windows, so it is left empty"
 
 project "breakpad_client"
   kind "StaticLib"
@@ -151,16 +176,38 @@ project "breakpad_client"
       SRC_ROOT.."/src/common/linux/safe_readlink.cc",
     }
 
+  filter "system:windows"
+    files {
+      SRC_ROOT.."/src/client/windows/crash_generation/crash_generation_client.cc",
+      SRC_ROOT.."/src/client/windows/handler/exception_handler.cc",
+      SRC_ROOT.."/src/common/md5.cc",
+      SRC_ROOT.."/src/common/string_conversion.cc",
+      SRC_ROOT.."/src/common/windows/dia_util.cc",
+      SRC_ROOT.."/src/common/windows/guid_string.cc",
+      SRC_ROOT.."/src/common/windows/http_upload.cc",
+      SRC_ROOT.."/src/common/windows/pdb_source_line_writer.cc",
+      SRC_ROOT.."/src/common/windows/string_utils.cc",
+    }
+
 project "crash"
   kind "ConsoleApp"
   targetdir "bin/%{cfg.buildcfg}"
   links {"breakpad_client"}
+
   filter "system:macosx"
     files {
       "./examples/mac/crash.cc",
     }
+
   filter "system:linux"
     links {"pthread"}
     files {
       "./examples/linux/crash.cc",
     }
+
+  filter "system:windows"
+    files {
+      "./examples/windows/crash.cc",
+    }
+
+  filter {}
