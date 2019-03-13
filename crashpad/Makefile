@@ -40,3 +40,11 @@ build-linux-all: clean-all fetch-crashpad build-docker
 
 build-mac-all: clean-all fetch-crashpad build-shell collect
 .PHONY: build-mac-all
+
+generate-getsentry-patch:
+	rm -rf .crashpad-getsentry
+	git clone --branch getsentry https://github.com/getsentry/crashpad .crashpad-getsentry
+	cd .crashpad-getsentry \
+		&& git fetch origin master \
+		&& git format-patch --stdout origin/master...HEAD > ../patches/getsentry.patch
+.PHONY: generate-getsentry-patch

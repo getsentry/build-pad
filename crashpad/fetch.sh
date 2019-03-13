@@ -20,8 +20,8 @@ fi
 
 if [[ "${TF_BUILD:-}" == "True" ]]; then
   # Set git data to avoid errors
-  git config --global user.email "azure.pipelines@sentry.io"
-  git config --global user.name "Azure Pipelines"
+  git config --global user.email "ci.build.crashpad@sentry.io"
+  git config --global user.name "CI build"
 fi
 
 # Checkout and sync crashpad
@@ -34,6 +34,9 @@ else
   $FETCH_CMD crashpad
   cd crashpad
   # Apply Sentry patches
+  git remote add getsentry https://github.com/getsentry/crashpad
+  git fetch getsentry getsentry
+  git checkout getsentry
   git checkout -b feat/getsentry-patches
-  git am -3 --ignore-whitespace --ignore-space-change < $SCRIPT_DIR/patches/getsentry.patch
+  git rebase origin/master
 fi
