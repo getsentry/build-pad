@@ -39,4 +39,5 @@ else
   git checkout getsentry
   git checkout -b feat/getsentry-patches
   git rebase origin/master
+  git log -1
 fi
