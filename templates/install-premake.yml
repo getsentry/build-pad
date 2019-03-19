@@ -1,13 +1,20 @@
-jobs:
-  - job: Download
-    bash: |
+steps:
+  - bash: |
       if [[ "$AGENT_OS" == "Linux" ]]; then
-
+        DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz"
+        UNAR="tar xvf"
       elif [[ "$AGENT_OS" == "Windows" ]]; then
-
+        DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-windows.zip"
+        UNAR="unzip"
       elif [[ "$AGENT_OS" == "Darwin" ]]; then
-
+        DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-macosx.tar.gz"
+        UNAR="tar xvf"
       else
         print "Unsupported OS, AGENT_OS is set to '$AGENT_OS'"
         exit 1
       fi
+
+      cd $TMP
+      wget "$DOWNLOAD_URL" -O crashpad.out
+      $UNAR crashpad.out
+    displayName: Install premake5
