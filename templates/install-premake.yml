@@ -4,14 +4,17 @@ steps:
         DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz"
         UNAR="tar xvf"
         DEST_DIR="/usr/local/bin"
-      elif [[ "$AGENT_OS" == "Windows" ]]; then
-        DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-windows.zip"
-        UNAR="unzip"
-        DEST_DIR="/usr/local/bin"
+        SUDO="sudo"
       elif [[ "$AGENT_OS" == "Darwin" ]]; then
         DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-macosx.tar.gz"
         UNAR="tar xvf"
+        DEST_DIR="/usr/local/bin"
+        SUDO="sudo"
+      elif [[ "$AGENT_OS" == "Windows" ]]; then
+        DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-windows.zip"
+        UNAR="unzip"
         DEST_DIR="/mingw64/bin"
+        SUDO=""
       else
         print "Unsupported OS, AGENT_OS is set to '$AGENT_OS'"
         exit 1
@@ -20,5 +23,5 @@ steps:
       cd $TMP
       wget "$DOWNLOAD_URL" -O crashpad.out
       $UNAR crashpad.out
-      mv premake5 $DEST_DIR
+      $SUDO mv premake5 $DEST_DIR
     displayName: Install premake5
