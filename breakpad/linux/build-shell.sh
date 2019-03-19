@@ -7,7 +7,7 @@ set -eux
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
 
-cd ../deps/breakpad
+cd ../premake
 
-./configure ${BREAKPAD_CONFIGURE_FLAGS:-}
+premake5 gmake
 make
