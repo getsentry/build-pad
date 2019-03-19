@@ -23,6 +23,7 @@ steps:
       fi
 
       cd /tmp
+      which curl || true
       wget "$DOWNLOAD_URL" -O crashpad.out
       $UNAR crashpad.out
       $SUDO mv premake5 $DEST_DIR
