@@ -12,7 +12,7 @@ steps:
         UNAR="tar xvf"
         DEST_DIR="/usr/local/bin"
         SUDO="sudo"
-      elif [[ "$AGENT_OS" == "Windows" ]]; then
+      elif [[ "$AGENT_OS" == "Windows_NT" ]]; then
         DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-windows.zip"
         UNAR="unzip"
         DEST_DIR="/mingw64/bin"
