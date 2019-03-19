@@ -23,9 +23,9 @@ steps:
       fi
 
       cd /tmp
-      curl -L "$DOWNLOAD_URL" -o crashpad.out
-      $UNAR crashpad.out
-      $SUDO mv premake5 $DEST_DIR
+      curl -L "$DOWNLOAD_URL" -o downloaded.out
+      $UNAR downloaded.out
+      $SUDO mv premake5* $DEST_DIR
 
       # Smoke test
       which premake5
