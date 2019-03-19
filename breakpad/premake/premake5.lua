@@ -122,6 +122,21 @@ project "minidump_dump"
     -- This project cannot be currently compiled on Windows
     removefiles {SRC_ROOT.."/src/**"}
 
+project "minidump_stackwalk"
+  kind "ConsoleApp"
+
+  files {
+    -- TODO
+  }
+  removefiles {
+    SRC_ROOT.."/src/**/*_unittest.cc",
+    SRC_ROOT.."/src/**/*_test.cc",
+  }
+
+  filter "system:windows"
+    -- This project cannot be currently compiled on Windows
+    removefiles {SRC_ROOT.."/src/**"}
+
 project "breakpad_client"
   kind "StaticLib"
   pic "On"

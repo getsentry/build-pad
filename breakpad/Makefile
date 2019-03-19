@@ -11,7 +11,7 @@ fetch-breakpad:
 
 # MacOS
 build-macos:
-	cd premake && premake5 gmake && make
+	cd premake && premake5 gmake && make verbose=1
 
 collect-macos:
 	bash ./macos/collect-files.sh

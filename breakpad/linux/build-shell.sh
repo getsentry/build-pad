@@ -10,4 +10,4 @@ cd $SCRIPT_DIR
 cd ../premake
 
 premake5 gmake
-make
+make verbose=1
