@@ -14,8 +14,7 @@ OUT_DIR_BIN="${OUT_DIR}/bin"
 OUT_DIR_INCLUDE="${OUT_DIR}/include"
 OUT_DIR_LIB="${OUT_DIR}/lib"
 BREAKPAD_DIR="${SCRIPT_DIR}/../deps/breakpad"
-BUILD_DIR="${BREAKPAD_DIR}/src"
-PREMAKE_DIR="${SCRIPT_DIR}/../premake"
+BUILD_DIR="${BREAKPAD_DIR}/../premake/bin/Release"
 
 find $PREMAKE_DIR
 
