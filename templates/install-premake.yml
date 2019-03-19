@@ -22,7 +22,7 @@ steps:
         exit 1
       fi
 
-      cd $TMP
+      cd /tmp
       wget "$DOWNLOAD_URL" -O crashpad.out
       $UNAR crashpad.out
       $SUDO mv premake5 $DEST_DIR
