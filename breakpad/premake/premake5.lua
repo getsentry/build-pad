@@ -123,7 +123,6 @@ project "minidump_dump"
   filter "system:windows"
     -- This project cannot be currently compiled on Windows
     removefiles {SRC_ROOT.."/src/**"}
-    premake.warn "'minidump_dump' project cannot be compiled on Windows, so it is left empty"
 
 project "breakpad_client"
   kind "StaticLib"
@@ -147,6 +146,7 @@ project "breakpad_client"
       SRC_ROOT.."/src/common/mac/macho_walker.cc",
       SRC_ROOT.."/src/common/mac/string_utilities.cc",
       SRC_ROOT.."/src/common/mac/MachIPC.mm",
+      SRC_ROOT.."/src/common/mac/HTTPMultipartUpload.m",
     }
 
   filter "system:linux"

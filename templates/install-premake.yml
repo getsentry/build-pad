@@ -1,0 +1,13 @@
+jobs:
+  - job: Download
+    bash: |
+      if [[ "$AGENT_OS" == "Linux" ]]; then
+
+      elif [[ "$AGENT_OS" == "Windows" ]]; then
+
+      elif [[ "$AGENT_OS" == "Darwin" ]]; then
+
+      else
+        print "Unsupported OS, AGENT_OS is set to '$AGENT_OS'"
+        exit 1
+      fi
