@@ -29,3 +29,5 @@ steps:
     env:
       ZEUS_HOOK_BASE: $(ZEUS_HOOK_BASE)
     displayName: Register build on Zeus
+
+  - template: install-premake.yml

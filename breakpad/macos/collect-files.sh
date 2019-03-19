@@ -14,7 +14,7 @@ OUT_DIR_BIN="${OUT_DIR}/bin"
 OUT_DIR_INCLUDE="${OUT_DIR}/include"
 OUT_DIR_LIB="${OUT_DIR}/lib"
 BREAKPAD_DIR="${SCRIPT_DIR}/../deps/breakpad"
-BUILD_DIR="${SCRIPT_DIR}/build"
+BUILD_DIR="${SCRIPT_DIR}/../premake/bin/Release"
 
 rm -rf $OUT_DIR $ARCHIVE_OUT_NAME $ARCHIVES_DIR
 mkdir -p $OUT_DIR $ARCHIVES_DIR

@@ -7,11 +7,13 @@ cd $SCRIPT_DIR
 MSBUILD="/c/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/Bin/MSBuild.exe"
 
 if [[ "${BUILD_ARCH:-}" == "i686" ]]; then
-    PLATFORM="x86"
+    PLATFORM="Win32"
 else
-    PLATFORM="x64"
+    PLATFORM="Win64"
 fi
 
-"$MSBUILD" BreakpadTools.sln //m //p:Configuration=Release //p:Platform=$PLATFORM //t:Clean,Build
+cd ../premake
+premake5 vs2017
+"$MSBUILD" Breakpad.sln //m //p:Configuration=Release //p:Platform=$PLATFORM //t:Clean,Build
 
 find .

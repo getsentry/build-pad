@@ -31,8 +31,6 @@ jobs:
           set -eux
           cd breakpad/
           make build-linux-docker-all
-          # Smoke test
-          make -C linux main
       - task: PublishBuildArtifacts@1
         inputs:
           pathToPublish: "breakpad/linux/dist/out/breakpad-Linux.zip"

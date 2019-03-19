@@ -41,7 +41,6 @@ workspace "Breakpad"
 
 project "dump_syms"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
 
   filter "system:macosx"
     files {
@@ -101,10 +100,8 @@ project "dump_syms"
 
 project "minidump_dump"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
 
   files {
-    SRC_ROOT.."/src/common/**.h",
     SRC_ROOT.."/src/processor/minidump_dump.cc",
     SRC_ROOT.."/src/processor/basic_code_modules.cc",
     SRC_ROOT.."/src/processor/convert_old_arm64_context.cc",
@@ -123,11 +120,83 @@ project "minidump_dump"
   filter "system:windows"
     -- This project cannot be currently compiled on Windows
     removefiles {SRC_ROOT.."/src/**"}
-    premake.warn "'minidump_dump' project cannot be compiled on Windows, so it is left empty"
+
+project "minidump_stackwalk"
+  kind "ConsoleApp"
+  links {"disasm"}
+
+  files {
+    SRC_ROOT.."/src/processor/minidump_stackwalk.cc",
+    SRC_ROOT.."/src/common/path_helper.cc",
+    SRC_ROOT.."/src/processor/basic_code_modules.cc",
+    SRC_ROOT.."/src/processor/basic_source_line_resolver.cc",
+    SRC_ROOT.."/src/processor/call_stack.cc",
+    SRC_ROOT.."/src/processor/cfi_frame_info.cc",
+    SRC_ROOT.."/src/processor/convert_old_arm64_context.cc",
+    SRC_ROOT.."/src/processor/disassembler_x86.cc",
+    SRC_ROOT.."/src/processor/dump_context.cc",
+    SRC_ROOT.."/src/processor/dump_object.cc",
+    SRC_ROOT.."/src/processor/exploitability.cc",
+    SRC_ROOT.."/src/processor/exploitability_linux.cc",
+    SRC_ROOT.."/src/processor/exploitability_win.cc",
+    SRC_ROOT.."/src/processor/logging.cc",
+    SRC_ROOT.."/src/processor/minidump.cc",
+    SRC_ROOT.."/src/processor/minidump_processor.cc",
+    SRC_ROOT.."/src/processor/pathname_stripper.cc",
+    SRC_ROOT.."/src/processor/process_state.cc",
+    SRC_ROOT.."/src/processor/proc_maps_linux.cc",
+    SRC_ROOT.."/src/processor/simple_symbol_supplier.cc",
+    SRC_ROOT.."/src/processor/source_line_resolver_base.cc",
+    SRC_ROOT.."/src/processor/stack_frame_cpu.cc",
+    SRC_ROOT.."/src/processor/stack_frame_symbolizer.cc",
+    SRC_ROOT.."/src/processor/stackwalk_common.cc",
+    SRC_ROOT.."/src/processor/stackwalker*.cc",
+    SRC_ROOT.."/src/processor/symbolic_constants_win.cc",
+    SRC_ROOT.."/src/processor/tokenize.cc",
+  }
+  removefiles {
+    SRC_ROOT.."/src/**/*_unittest.cc",
+    SRC_ROOT.."/src/**/*test.cc",
+  }
+
+  filter "system:windows"
+    -- This project cannot be currently compiled on Windows
+    removefiles {SRC_ROOT.."/src/**"}
+    removelinks {"*"}
+
+project "disasm"
+  kind "StaticLib"
+  pic "On"
+  files {
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_implicit.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_insn.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_invariant.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_modrm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_opcode_tables.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_operand.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_reg.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_settings.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_disasm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_format.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_imm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_insn.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_misc.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_operand_list.c",
+  }
+
+  filter "system:windows"
+    -- This project cannot be currently compiled on Windows
+    removefiles {SRC_ROOT.."/src/**"}
+
 
 project "breakpad_client"
   kind "StaticLib"
   pic "On"
+
+  files {
+    SRC_ROOT.."/src/common/string_conversion.cc",
+    SRC_ROOT.."/src/common/md5.cc",
+  }
 
   filter "system:macosx"
     files {
@@ -138,8 +207,6 @@ project "breakpad_client"
       SRC_ROOT.."/src/client/mac/handler/minidump_generator.cc",
       SRC_ROOT.."/src/client/mac/handler/breakpad_nlist_64.cc",
       SRC_ROOT.."/src/common/convert_UTF.c",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/mac/bootstrap_compat.cc",
       SRC_ROOT.."/src/common/mac/file_id.cc",
       SRC_ROOT.."/src/common/mac/macho_id.cc",
@@ -147,6 +214,7 @@ project "breakpad_client"
       SRC_ROOT.."/src/common/mac/macho_walker.cc",
       SRC_ROOT.."/src/common/mac/string_utilities.cc",
       SRC_ROOT.."/src/common/mac/MachIPC.mm",
+      SRC_ROOT.."/src/common/mac/HTTPMultipartUpload.m",
     }
 
   filter "system:linux"
@@ -165,8 +233,6 @@ project "breakpad_client"
       SRC_ROOT.."/src/client/linux/minidump_writer/minidump_writer.cc",
       SRC_ROOT.."/src/client/minidump_file_writer.cc",
       SRC_ROOT.."/src/common/convert_UTF.c",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/linux/elf_core_dump.cc",
       SRC_ROOT.."/src/common/linux/elfutils.cc",
       SRC_ROOT.."/src/common/linux/file_id.cc",
@@ -174,14 +240,13 @@ project "breakpad_client"
       SRC_ROOT.."/src/common/linux/linux_libc_support.cc",
       SRC_ROOT.."/src/common/linux/memory_mapped_file.cc",
       SRC_ROOT.."/src/common/linux/safe_readlink.cc",
+      SRC_ROOT.."/src/common/linux/http_upload.cc",
     }
 
   filter "system:windows"
     files {
       SRC_ROOT.."/src/client/windows/crash_generation/crash_generation_client.cc",
       SRC_ROOT.."/src/client/windows/handler/exception_handler.cc",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/windows/dia_util.cc",
       SRC_ROOT.."/src/common/windows/guid_string.cc",
       SRC_ROOT.."/src/common/windows/http_upload.cc",
@@ -191,7 +256,6 @@ project "breakpad_client"
 
 project "crash"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
   links {"breakpad_client"}
 
   filter "system:macosx"
