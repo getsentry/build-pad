@@ -26,6 +26,7 @@ steps:
       curl -L "$DOWNLOAD_URL" -o downloaded.out
       $UNAR downloaded.out
       $SUDO mv premake5* $DEST_DIR
+      $SUDO chmod +x $DEST_DIR/premake5*
 
       # Smoke test
       which premake5

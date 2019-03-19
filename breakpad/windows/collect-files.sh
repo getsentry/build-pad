@@ -14,14 +14,15 @@ OUT_DIR_BIN="${OUT_DIR}/bin"
 OUT_DIR_INCLUDE="${OUT_DIR}/include"
 OUT_DIR_LIB="${OUT_DIR}/lib"
 BREAKPAD_DIR="${SCRIPT_DIR}/../deps/breakpad"
+PREMAKE_DIR="${SCRIPT_DIR}/../premake"
 
 VS_DIR="/c/Program Files (x86)/Microsoft Visual Studio/2017"
 
 if [[ "${BUILD_ARCH:-}" == "i686" ]]; then
-    BUILD_DIR="${SCRIPT_DIR}/Release"
+    BUILD_DIR="${PREMAKE_DIR}/bin/Win32/Release"
     MSDIA_DLL_PATH="$VS_DIR/Enterprise/DIA SDK/bin/msdia140.dll"
 else
-    BUILD_DIR="${SCRIPT_DIR}/x64/Release"
+    BUILD_DIR="${PREMAKE_DIR}/bin/Win64/Release"
     MSDIA_DLL_PATH="$VS_DIR/Enterprise/DIA SDK/bin/amd64/msdia140.dll"
 fi
 
@@ -42,7 +43,7 @@ cp "$MSDIA_DLL_PATH" "$OUT_DIR_BIN"
 
 # lib/
 mkdir $OUT_DIR_LIB
-cp $BUILD_DIR/libbreakpad_client.* "$OUT_DIR_LIB"
+cp $BUILD_DIR/breakpad_client.* "$OUT_DIR_LIB"
 
 ZIP=$SCRIPT_DIR/../../bin/zip.py
 

@@ -41,7 +41,6 @@ workspace "Breakpad"
 
 project "dump_syms"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
 
   filter "system:macosx"
     files {
@@ -101,7 +100,6 @@ project "dump_syms"
 
 project "minidump_dump"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
 
   files {
     SRC_ROOT.."/src/common/**.h",
@@ -191,7 +189,6 @@ project "breakpad_client"
 
 project "crash"
   kind "ConsoleApp"
-  targetdir "bin/%{cfg.buildcfg}"
   links {"breakpad_client"}
 
   filter "system:macosx"
