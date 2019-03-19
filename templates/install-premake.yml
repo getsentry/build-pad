@@ -1,5 +1,7 @@
 steps:
   - bash: |
+      set -eux
+
       if [[ "$AGENT_OS" == "Linux" ]]; then
         DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz"
         UNAR="tar xvf"
@@ -24,4 +26,7 @@ steps:
       wget "$DOWNLOAD_URL" -O crashpad.out
       $UNAR crashpad.out
       $SUDO mv premake5 $DEST_DIR
+
+      # Smoke test
+      which premake5
     displayName: Install premake5
