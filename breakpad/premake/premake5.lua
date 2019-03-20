@@ -193,6 +193,11 @@ project "breakpad_client"
   kind "StaticLib"
   pic "On"
 
+  files {
+    SRC_ROOT.."/src/common/string_conversion.cc",
+    SRC_ROOT.."/src/common/md5.cc",
+  }
+
   filter "system:macosx"
     files {
       SRC_ROOT.."/src/client/minidump_file_writer.cc",
@@ -202,8 +207,6 @@ project "breakpad_client"
       SRC_ROOT.."/src/client/mac/handler/minidump_generator.cc",
       SRC_ROOT.."/src/client/mac/handler/breakpad_nlist_64.cc",
       SRC_ROOT.."/src/common/convert_UTF.c",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/mac/bootstrap_compat.cc",
       SRC_ROOT.."/src/common/mac/file_id.cc",
       SRC_ROOT.."/src/common/mac/macho_id.cc",
@@ -230,8 +233,6 @@ project "breakpad_client"
       SRC_ROOT.."/src/client/linux/minidump_writer/minidump_writer.cc",
       SRC_ROOT.."/src/client/minidump_file_writer.cc",
       SRC_ROOT.."/src/common/convert_UTF.c",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/linux/elf_core_dump.cc",
       SRC_ROOT.."/src/common/linux/elfutils.cc",
       SRC_ROOT.."/src/common/linux/file_id.cc",
@@ -239,14 +240,13 @@ project "breakpad_client"
       SRC_ROOT.."/src/common/linux/linux_libc_support.cc",
       SRC_ROOT.."/src/common/linux/memory_mapped_file.cc",
       SRC_ROOT.."/src/common/linux/safe_readlink.cc",
+      SRC_ROOT.."/src/common/linux/http_upload.cc",
     }
 
   filter "system:windows"
     files {
       SRC_ROOT.."/src/client/windows/crash_generation/crash_generation_client.cc",
       SRC_ROOT.."/src/client/windows/handler/exception_handler.cc",
-      SRC_ROOT.."/src/common/md5.cc",
-      SRC_ROOT.."/src/common/string_conversion.cc",
       SRC_ROOT.."/src/common/windows/dia_util.cc",
       SRC_ROOT.."/src/common/windows/guid_string.cc",
       SRC_ROOT.."/src/common/windows/http_upload.cc",
