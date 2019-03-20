@@ -102,7 +102,6 @@ project "minidump_dump"
   kind "ConsoleApp"
 
   files {
-    SRC_ROOT.."/src/common/**.h",
     SRC_ROOT.."/src/processor/minidump_dump.cc",
     SRC_ROOT.."/src/processor/basic_code_modules.cc",
     SRC_ROOT.."/src/processor/convert_old_arm64_context.cc",
@@ -124,18 +123,65 @@ project "minidump_dump"
 
 project "minidump_stackwalk"
   kind "ConsoleApp"
+  links {"disasm"}
 
   files {
-    -- TODO
+    SRC_ROOT.."/src/processor/minidump_stackwalk.cc",
+    SRC_ROOT.."/src/common/path_helper.cc",
+    SRC_ROOT.."/src/processor/basic_code_modules.cc",
+    SRC_ROOT.."/src/processor/basic_source_line_resolver.cc",
+    SRC_ROOT.."/src/processor/call_stack.cc",
+    SRC_ROOT.."/src/processor/cfi_frame_info.cc",
+    SRC_ROOT.."/src/processor/convert_old_arm64_context.cc",
+    SRC_ROOT.."/src/processor/disassembler_x86.cc",
+    SRC_ROOT.."/src/processor/dump_context.cc",
+    SRC_ROOT.."/src/processor/dump_object.cc",
+    SRC_ROOT.."/src/processor/exploitability.cc",
+    SRC_ROOT.."/src/processor/exploitability_linux.cc",
+    SRC_ROOT.."/src/processor/exploitability_win.cc",
+    SRC_ROOT.."/src/processor/logging.cc",
+    SRC_ROOT.."/src/processor/minidump.cc",
+    SRC_ROOT.."/src/processor/minidump_processor.cc",
+    SRC_ROOT.."/src/processor/pathname_stripper.cc",
+    SRC_ROOT.."/src/processor/process_state.cc",
+    SRC_ROOT.."/src/processor/proc_maps_linux.cc",
+    SRC_ROOT.."/src/processor/simple_symbol_supplier.cc",
+    SRC_ROOT.."/src/processor/source_line_resolver_base.cc",
+    SRC_ROOT.."/src/processor/stack_frame_cpu.cc",
+    SRC_ROOT.."/src/processor/stack_frame_symbolizer.cc",
+    SRC_ROOT.."/src/processor/stackwalk_common.cc",
+    SRC_ROOT.."/src/processor/stackwalker*.cc",
+    SRC_ROOT.."/src/processor/symbolic_constants_win.cc",
+    SRC_ROOT.."/src/processor/tokenize.cc",
   }
   removefiles {
     SRC_ROOT.."/src/**/*_unittest.cc",
-    SRC_ROOT.."/src/**/*_test.cc",
+    SRC_ROOT.."/src/**/*test.cc",
   }
 
   filter "system:windows"
     -- This project cannot be currently compiled on Windows
     removefiles {SRC_ROOT.."/src/**"}
+
+project "disasm"
+  kind "StaticLib"
+  pic "On"
+  files {
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_implicit.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_insn.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_invariant.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_modrm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_opcode_tables.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_operand.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_reg.c",
+    SRC_ROOT.."/src/third_party/libdisasm/ia32_settings.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_disasm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_format.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_imm.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_insn.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_misc.c",
+    SRC_ROOT.."/src/third_party/libdisasm/x86_operand_list.c",
+  }
 
 project "breakpad_client"
   kind "StaticLib"
