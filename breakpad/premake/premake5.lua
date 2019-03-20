@@ -162,6 +162,7 @@ project "minidump_stackwalk"
   filter "system:windows"
     -- This project cannot be currently compiled on Windows
     removefiles {SRC_ROOT.."/src/**"}
+    removelinks {"*"}
 
 project "disasm"
   kind "StaticLib"
