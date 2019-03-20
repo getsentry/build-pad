@@ -31,7 +31,7 @@ cp $BUILD_DIR/{dump_syms,minidump_dump,minidump_stackwalk} $OUT_DIR_BIN
 
 # lib/
 mkdir $OUT_DIR_LIB
-cp $BUILD_DIR/{libbreakpad.a,client/linux/libbreakpad_client.a,third_party/libdisasm/libdisasm.a} $OUT_DIR_LIB
+cp $BUILD_DIR/{libbreakpad_client,libdisasm}.a $OUT_DIR_LIB
 
 pushd $DIST_DIR
 zip -r $ARCHIVE_OUT_NAME $PACKAGE_NAME

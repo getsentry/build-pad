@@ -183,6 +183,11 @@ project "disasm"
     SRC_ROOT.."/src/third_party/libdisasm/x86_operand_list.c",
   }
 
+  filter "system:windows"
+    -- This project cannot be currently compiled on Windows
+    removefiles {SRC_ROOT.."/src/**"}
+
+
 project "breakpad_client"
   kind "StaticLib"
   pic "On"
