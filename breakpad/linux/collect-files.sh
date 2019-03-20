@@ -14,7 +14,7 @@ OUT_DIR_BIN="${OUT_DIR}/bin"
 OUT_DIR_INCLUDE="${OUT_DIR}/include"
 OUT_DIR_LIB="${OUT_DIR}/lib"
 BREAKPAD_DIR="${SCRIPT_DIR}/../deps/breakpad"
-BUILD_DIR="${BREAKPAD_DIR}/../premake/bin/Release"
+BUILD_DIR="${SCRIPT_DIR}/../premake/bin/Release"
 
 rm -rf $OUT_DIR $ARCHIVE_OUT_NAME $ARCHIVES_DIR
 mkdir -p $OUT_DIR $ARCHIVES_DIR
@@ -27,7 +27,7 @@ find $OUT_DIR_INCLUDE -type d -empty -exec rmdir -p {} \; 2>/dev/null || true
 
 # bin/
 mkdir $OUT_DIR_BIN
-cp $BUILD_DIR/processor/{minidump_dump,minidump_stackwalk} $OUT_DIR_BIN
+cp $BUILD_DIR/{dump_syms,minidump_dump,minidump_stackwalk} $OUT_DIR_BIN
 
 # lib/
 mkdir $OUT_DIR_LIB
