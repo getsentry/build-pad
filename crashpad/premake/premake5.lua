@@ -22,14 +22,45 @@ workspace "Crashpad"
   flags {
   }
 
+  pic "on"
+
   filter "system:macosx"
+  defines {
+  }
+  includedirs {
+    SRC_ROOT.."/compat/mac",
+    SRC_ROOT.."/compat/non_win",
+  }
+  buildoptions { "-mmacosx-version-min=10.9" }
+
+  filter "system:linux"
+    toolset("clang")
     defines {
+      "_FILE_OFFSET_BITS=64",
     }
     includedirs {
-      SRC_ROOT.."/compat/mac",
+      SRC_ROOT.."/compat/linux",
       SRC_ROOT.."/compat/non_win",
+      SRC_ROOT.."/compat/non_mac",
     }
-    buildoptions { "-mmacosx-version-min=10.9" }
+    buildoptions {
+      "-stdlib=libstdc++",
+      -- for "clang":
+      "-Wimplicit-fallthrough",
+    }
+    linkoptions {
+      "-rtlib=libgcc",
+      "-static-libstdc++",
+      "-stdlib=libstdc++",
+      "-Wl,--as-needed",
+      "-Wl,-z,noexecstack",
+    }
+    linkgroups "on"
+    filter {"system:linux", "kind:ConsoleApp"}
+      linkoptions {
+        "-pie",
+      }
+
   filter {}
 
 project "minichromium_base"
@@ -62,14 +93,16 @@ project "minichromium_base"
       MINICHROMIUM_BASE_ROOT.."/mac/scoped_mach_vm.cc",
       MINICHROMIUM_BASE_ROOT.."/mac/scoped_nsautorelease_pool.mm",
       MINICHROMIUM_BASE_ROOT.."/strings/sys_string_conversions_mac.mm",
+    }
 
+  filter {"system:macosx or linux"}
+    files {
       -- Posix
       MINICHROMIUM_BASE_ROOT.."/files/file_util_posix.cc",
       MINICHROMIUM_BASE_ROOT.."/posix/safe_strerror.cc",
       MINICHROMIUM_BASE_ROOT.."/process/process_metrics_posix.cc",
       MINICHROMIUM_BASE_ROOT.."/synchronization/lock_impl_posix.cc",
       MINICHROMIUM_BASE_ROOT.."/threading/thread_local_storage_posix.cc",
-      -- end posix
     }
 
 project "client"
@@ -89,6 +122,14 @@ project "client"
       SRC_ROOT.."/client/crash_report_database_mac.mm",
       SRC_ROOT.."/client/crashpad_client_mac.cc",
       SRC_ROOT.."/client/simulate_crash_mac.cc",
+    }
+
+  filter "system:linux"
+    files {
+      SRC_ROOT.."/client/crashpad_client_linux.cc",
+      SRC_ROOT.."/client/client_argv_handling.cc",
+      SRC_ROOT.."/client/crashpad_info_note.S",
+      SRC_ROOT.."/client/crash_report_database_generic.cc",
     }
 
 
@@ -267,7 +308,36 @@ project "util"
       gen_dir.."/util/mach/child_portUser.c",
       gen_dir.."/util/mach/child_portServer.c",
       -- End MIG
+    }
 
+  filter "system:linux"
+    defines {
+      "CRASHPAD_ZLIB_SOURCE_SYSTEM"
+    }
+    files {
+      SRC_ROOT.."/util/net/http_transport_socket.cc",
+
+      SRC_ROOT.."/util/linux/auxiliary_vector.cc",
+      SRC_ROOT.."/util/linux/direct_ptrace_connection.cc",
+      SRC_ROOT.."/util/linux/exception_handler_client.cc",
+      SRC_ROOT.."/util/linux/exception_handler_protocol.cc",
+      SRC_ROOT.."/util/linux/memory_map.cc",
+      SRC_ROOT.."/util/linux/proc_stat_reader.cc",
+      SRC_ROOT.."/util/linux/ptrace_broker.cc",
+      SRC_ROOT.."/util/linux/ptrace_client.cc",
+      SRC_ROOT.."/util/linux/ptracer.cc",
+      SRC_ROOT.."/util/linux/scoped_pr_set_dumpable.cc",
+      SRC_ROOT.."/util/linux/scoped_pr_set_ptracer.cc",
+      SRC_ROOT.."/util/linux/scoped_ptrace_attach.cc",
+      SRC_ROOT.."/util/linux/thread_info.cc",
+      SRC_ROOT.."/util/misc/capture_context_linux.S",
+      SRC_ROOT.."/util/misc/paths_linux.cc",
+      SRC_ROOT.."/util/posix/process_info_linux.cc",
+      SRC_ROOT.."/util/process/process_memory_linux.cc",
+    }
+
+  filter {"system:macosx or linux"}
+    files {
       -- Posix
       SRC_ROOT.."/util/file/directory_reader_posix.cc",
       SRC_ROOT.."/util/file/file_io_posix.cc",
@@ -285,6 +355,7 @@ project "util"
       SRC_ROOT.."/util/posix/symbolic_constants_posix.cc",
       -- End posix
     }
+
 
 project "snapshot"
   kind "StaticLib"
@@ -329,10 +400,37 @@ project "snapshot"
       SRC_ROOT.."/snapshot/mac/process_types/nlist.proctype",
       SRC_ROOT.."/snapshot/mac/system_snapshot_mac.cc",
       SRC_ROOT.."/snapshot/mac/thread_snapshot_mac.cc",
+    }
 
+  filter "system:linux"
+    files {
+      SRC_ROOT.."/snapshot/linux/cpu_context_linux.cc",
+      SRC_ROOT.."/snapshot/linux/debug_rendezvous.cc",
+      SRC_ROOT.."/snapshot/linux/exception_snapshot_linux.cc",
+      SRC_ROOT.."/snapshot/linux/process_reader_linux.cc",
+      SRC_ROOT.."/snapshot/linux/process_snapshot_linux.cc",
+      SRC_ROOT.."/snapshot/linux/system_snapshot_linux.cc",
+      SRC_ROOT.."/snapshot/linux/thread_snapshot_linux.cc",
+      SRC_ROOT.."/snapshot/sanitized/memory_snapshot_sanitized.cc",
+      SRC_ROOT.."/snapshot/sanitized/module_snapshot_sanitized.cc",
+      SRC_ROOT.."/snapshot/sanitized/process_snapshot_sanitized.cc",
+      SRC_ROOT.."/snapshot/sanitized/sanitization_information.cc",
+      SRC_ROOT.."/snapshot/sanitized/thread_snapshot_sanitized.cc",
+      SRC_ROOT.."/snapshot/crashpad_types/crashpad_info_reader.cc",
+      SRC_ROOT.."/snapshot/crashpad_types/image_annotation_reader.cc",
+      SRC_ROOT.."/snapshot/elf/elf_dynamic_array_reader.cc",
+      SRC_ROOT.."/snapshot/elf/elf_image_reader.cc",
+      SRC_ROOT.."/snapshot/elf/elf_symbol_table_reader.cc",
+      SRC_ROOT.."/snapshot/elf/module_snapshot_elf.cc",
+    }
+
+  filter {"system:macosx or linux"}
+    files {
       -- Posix
       SRC_ROOT.."/snapshot/posix/timezone.cc",
       -- End posix
+
+      SRC_ROOT.."/snapshot/x86/cpuid_reader.cc",
     }
 
 project "minidump"
@@ -373,17 +471,6 @@ project "crashpad_handler"
     "snapshot", "minidump",
   }
 
-  -- System stuff
-  links {
-    "ApplicationServices.framework",
-    "CoreFoundation.framework",
-    "Foundation.framework",
-    "IOKit.framework",
-    "Security.framework",
-    "bsm",
-    "z",
-  }
-
   files {
     SRC_ROOT.."/handler/main.cc",
     SRC_ROOT.."/tools/tool_support.cc",
@@ -395,18 +482,42 @@ project "crashpad_handler"
     SRC_ROOT.."/handler/user_stream_data_source.cc",
   }
 
-  filter "system:macosx"
+  removefiles {
+    SRC_ROOT.."/src/**/*_unittest.cc",
+    SRC_ROOT.."/src/**/*_test.cc",
+  }
 
+  filter "system:macosx"
     files {
       SRC_ROOT.."/handler/mac/crash_report_exception_handler.cc",
       SRC_ROOT.."/handler/mac/exception_handler_server.cc",
       SRC_ROOT.."/handler/mac/file_limit_annotation.cc",
     }
 
-  removefiles {
-    SRC_ROOT.."/src/**/*_unittest.cc",
-    SRC_ROOT.."/src/**/*_test.cc",
-  }
+    -- System stuff
+    links {
+      "ApplicationServices.framework",
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+      "Security.framework",
+      "bsm",
+      "z",
+    }
+
+  filter "system:linux"
+    files {
+      SRC_ROOT.."/handler/linux/crash_report_exception_handler.cc",
+      SRC_ROOT.."/handler/linux/exception_handler_server.cc",
+    }
+
+    -- System stuff
+    links {
+      "pthread",
+      "dl",
+      "z",
+    }
+
 
 project "crash"
   kind "ConsoleApp"
@@ -417,22 +528,22 @@ project "crash"
     "client",
   }
 
-  -- System stuff
-  links {
-    "ApplicationServices.framework",
-    "CoreFoundation.framework",
-    "Foundation.framework",
-    "IOKit.framework",
-    "Security.framework",
-    "bsm",
-    "z",
-  }
-
   dependson {"crashpad_handler"}
 
   filter "system:macosx"
     files {
       "./examples/mac/crash.cc",
+    }
+
+    -- System stuff
+    links {
+      "ApplicationServices.framework",
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+      "Security.framework",
+      "bsm",
+      "z",
     }
 
   filter "system:linux"
