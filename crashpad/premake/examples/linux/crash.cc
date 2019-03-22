@@ -23,19 +23,22 @@ int main() {
   std::string url("https://sentry.io/api/YYY/minidump/?sentry_key=XXX");
   // Optional annotations passed via --annotations to the handler
   std::map<std::string, std::string> annotations;
+  // File attachments
+  std::map<std::string, base::FilePath> fileAttachments;
   // Optional arguments to pass to the handler
   std::vector<std::string> arguments;
 
   CrashpadClient client;
-  bool success = client.StartHandlerAtCrash(
+  bool success = client.StartHandlerWithAttachments(
     handler,
     database,
     database,
     url,
     annotations,
-    arguments
-    // /* restartable */ true,
-    // /* asynchronous_start */ false
+    fileAttachments,
+    arguments,
+    /* restartable */ true,
+    /* asynchronous_start */ false
   );
 
   if (success) {
